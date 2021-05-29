@@ -66,17 +66,23 @@ public class TablePane extends ScrollPane {
 					File excelFile = excelChooser.showOpenDialog(primaryStage);
 					
 					if(excelFile != null) {
-							try {
-								if(titleLabel.getText() == "常检表") {
-									DailyTable.getAndCheckTableTitle(excelFile.getAbsolutePath());
-								}else if(titleLabel.getText() == "值班表") {
-									DutyTable.getAndCheckTableTitle(excelFile.getAbsolutePath());
-								}
-								createTableDatePane(excelFile.getPath());
-								excelPaths.add(excelFile.getPath());						
-							} catch (Exception e) {
-								Main.alertError(e);
+						try {
+							if(titleLabel.getText() == "常检表") {
+								DailyTable.getAndCheckTableTitle(excelFile.getAbsolutePath());
+							}else if(titleLabel.getText() == "值班表") {
+								DutyTable.getAndCheckTableTitle(excelFile.getAbsolutePath());
 							}
+							
+							if(!excelPaths.contains(excelFile.getPath())) {
+								createTableDatePane(excelFile.getPath());
+								excelPaths.add(excelFile.getPath());														
+							}else {
+								throw new Exception("此表格已经导入");
+							}
+							
+						} catch (Exception e) {
+							Main.alertError(e);
+						}
 					}
 				}
 			});
