@@ -18,7 +18,7 @@ public class Worker {
 	Group group;
 	String phone, bankcard, studentID;
 	Map<String, Double> hourList;
-	double finalHours, restHours;
+	double preHours, finalHours, restHours;
 	
 	public Worker() {
 		this.hourList = new HashMap<String, Double>();
@@ -51,7 +51,7 @@ public class Worker {
 	}
 	
 	public double getTotalHours() {
-		double tot = 0;
+		double tot = this.preHours;
 		for(String name: hourList.keySet()) {
 			tot += hourList.get(name);
 		}
@@ -71,7 +71,7 @@ public class Worker {
 		XSSFSheet sheet = xssfWorkbook.getSheetAt(0);
 		
 		XSSFRow titleRow = sheet.getRow(0);
-		for(int i = 0; i < 5; i++) {
+		for(int i = 0; i <= 5; i++) {
 			XSSFCell cell = titleRow.getCell(i);
 			if(cell == null) {
 				throw formatException;
@@ -79,7 +79,7 @@ public class Worker {
 			title2Col.put(cell.getStringCellValue(), i);
 		}
 		if(!title2Col.containsKey("姓名") || !title2Col.containsKey("学号") || !title2Col.containsKey("银行账号") || 
-				!title2Col.containsKey("组别") || !title2Col.containsKey("电话")) {
+				!title2Col.containsKey("组别") || !title2Col.containsKey("电话") || !title2Col.containsKey("上月积余")) {
 			throw formatException;
 		}
 		
@@ -102,6 +102,11 @@ public class Worker {
 					worker.group = Group.ADMIN;
 				}
 			} 
+			if(row.getCell(title2Col.get("上月积余")) != null) {
+				row.getCell(title2Col.get("上月积余")).setCellType(CellType.NUMERIC);
+				worker.preHours = row.getCell(title2Col.get("上月积余")).getNumericCellValue();
+			}
+			
 			workerList.add(worker);
 		}
 		

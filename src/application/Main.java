@@ -121,8 +121,8 @@ public class Main extends Application {
 	
 	public static void alertError(Exception e) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setTitle("异常");
-		alert.setHeaderText("异常");
+		alert.setTitle("错误");
+		alert.setHeaderText(e.getMessage());
 		alert.setContentText(e.toString());
 		
 		StringWriter sw = new StringWriter();
