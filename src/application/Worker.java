@@ -58,10 +58,6 @@ public class Worker {
 		return tot;
 	}
 	
-	public boolean equals(Worker worker) {
-		return this.studentID.equals(worker.studentID);
-	}
-	
 	public static List<Worker> initWorkerList(String excelPath) throws Exception {
 		List<Worker> workerList = new ArrayList<Worker>();
 		Map<String, Integer> title2Col = new HashMap<String, Integer>();
@@ -91,10 +87,20 @@ public class Worker {
 				row.getCell(j).setCellType(CellType.STRING);
 			}
 			
-			worker.studentID = row.getCell(title2Col.get("学号")).getStringCellValue();
-			worker.name = row.getCell(title2Col.get("姓名")).getStringCellValue();
-			worker.bankcard = row.getCell(title2Col.get("银行账号")).getStringCellValue();
-			worker.phone = row.getCell(title2Col.get("电话")).getStringCellValue();
+			if(row.getCell(title2Col.get("学号")) != null) {				
+				worker.studentID = row.getCell(title2Col.get("学号")).getStringCellValue();
+			}
+			if(row.getCell(title2Col.get("姓名")) != null) {				
+				worker.name = row.getCell(title2Col.get("姓名")).getStringCellValue();
+			}else {
+				throw new Exception("通讯录中助理信息必须包含姓名");
+			}
+			if(row.getCell(title2Col.get("银行账号")) != null) {				
+				worker.bankcard = row.getCell(title2Col.get("银行账号")).getStringCellValue();
+			}
+			if(row.getCell(title2Col.get("电话")) != null) {				
+				worker.phone = row.getCell(title2Col.get("电话")).getStringCellValue();
+			}
 			if(row.getCell(title2Col.get("组别")) != null) {
 				if(row.getCell(title2Col.get("组别")).getStringCellValue().equals("系统组")) {
 					worker.group = Group.SYSTEM;

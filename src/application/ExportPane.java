@@ -85,15 +85,15 @@ public class ExportPane extends FlowPane {
 	}
 	
 	private HourCounter initHourCounter() {
-		HourCounter hourCounter = new HourCounter(this.tablePane.getWorkerList(), this.tablePane.getDutyTableList(), 
-				this.tablePane.getDailyTableList(), this.datePane.getWorkDates(),
-				this.datePane.getWeeklyDates(), this.datePane.getHoursLimit());
-		hourCounter.setDutyRestDates(this.datePane.getDutyRestDates());
-		hourCounter.setDailyRestDates(this.datePane.getDailyRestDates());
-		hourCounter.setDailyChangeDates(this.datePane.getDailyChangeDates());
-		hourCounter.setDutyChangeDates(this.datePane.getDutyChangeDates());
-		hourCounter.setExtraHourLists(this.hourListPane.getExtraLists());
 		try {
+			HourCounter hourCounter = new HourCounter(this.tablePane.getWorkerList(), this.tablePane.getDutyTableList(), 
+					this.tablePane.getDailyTableList(), this.datePane.getWorkDates(),
+					this.datePane.getWeeklyDates(), this.datePane.getHoursLimit());
+			hourCounter.setDutyRestDates(this.datePane.getDutyRestDates());
+			hourCounter.setDailyRestDates(this.datePane.getDailyRestDates());
+			hourCounter.setDailyChangeDates(this.datePane.getDailyChangeDates());
+			hourCounter.setDutyChangeDates(this.datePane.getDutyChangeDates());
+			hourCounter.setExtraHourLists(this.hourListPane.getExtraLists());
 			hourCounter.count();
 			return hourCounter;
 		} catch (Exception e) {

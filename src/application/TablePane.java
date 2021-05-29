@@ -124,7 +124,7 @@ public class TablePane extends ScrollPane {
 		return this.workerList;
 	}
 	
-	public List<DutyTable> getDutyTableList(){
+	public List<DutyTable> getDutyTableList() throws Exception{
 		List<DutyTable> dutyTableList = new ArrayList<DutyTable>();
 		
 		for(int i = 0; i < this.dutyImportPane.excelPaths.size(); i++) {
@@ -135,17 +135,13 @@ public class TablePane extends ScrollPane {
 			Date startDate = Main.string2Date(startDatePicker.getValue().toString());
 			Date endDate = Main.string2Date(endDatePicker.getValue().toString());
 			
-			try {
-				dutyTableList.add(new DutyTable(this.workerList, excelPath, startDate, endDate));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			dutyTableList.add(new DutyTable(this.workerList, excelPath, startDate, endDate));
 		}
 		
 		return dutyTableList;
 	}
 	
-	public List<DailyTable> getDailyTableList(){
+	public List<DailyTable> getDailyTableList() throws Exception{
 		List<DailyTable> dailyTableList = new ArrayList<DailyTable>();
 		
 		for(int i = 0; i < this.dailyImportPane.excelPaths.size(); i++) {
@@ -156,11 +152,7 @@ public class TablePane extends ScrollPane {
 			Date startDate = Main.string2Date(startDatePicker.getValue().toString());
 			Date endDate = Main.string2Date(endDatePicker.getValue().toString());
 			
-			try {
-				dailyTableList.add(new DailyTable(this.workerList, excelPath, startDate, endDate));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			dailyTableList.add(new DailyTable(this.workerList, excelPath, startDate, endDate));
 		}
 		
 		return dailyTableList;
@@ -170,6 +162,7 @@ public class TablePane extends ScrollPane {
 		this.workerListPane = new FlowPane();
 		Label titleLabel = new Label("通讯录");
 		Button importButton = new Button("导入");
+		Label fileNameLabel = new Label();
 		
 		importButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -183,6 +176,7 @@ public class TablePane extends ScrollPane {
 				if(excelFile != null) {							
 					try {
 						workerList = Worker.initWorkerList(excelFile.getPath());
+						fileNameLabel.setText(excelFile.getName());
 						hourListPane.setWorkerList(workerList);
 					} catch (Exception e) {
 						Main.alertError(e);
@@ -191,7 +185,7 @@ public class TablePane extends ScrollPane {
 			}
 		});
 		
-		this.workerListPane.getChildren().addAll(titleLabel, importButton);
+		this.workerListPane.getChildren().addAll(titleLabel, importButton, fileNameLabel);
 		this.vbox.getChildren().add(this.workerListPane);
 	}
 }
