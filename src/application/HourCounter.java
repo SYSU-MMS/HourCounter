@@ -33,10 +33,26 @@ public class HourCounter {
 
 	private List<ExtraHourList> extraHourLists;
 	
-	public static final double DAILY_CHECK_HOURS = 2;
-	public static final double WEEKLY_CHECK_HOURS_PER_ROOM = 0.5;
-	public static final double GROUP_ADMIN_HOURS = 40;
-	public static final double GROUP_SYSTEM_HOURS = 20;
+	private double dailyCheckHoursPerday = 2;
+	private double weeklyCheckHoursPerWeek = 1.5;
+	private double groupAdminHours = 40;
+	private double groupSystemHours = 40;
+	
+	public void setDailyCheckHoursPerday(double dailyCheckHoursPerday) {
+		this.dailyCheckHoursPerday = dailyCheckHoursPerday;
+	}
+	
+	public void setWeeklyCheckHoursPerWeek(double weeklyCheckHoursPerWeek) {
+		this.weeklyCheckHoursPerWeek = weeklyCheckHoursPerWeek;
+	}
+	
+	public void setGroupAdminHours(double groupAdminHours) {
+		this.groupAdminHours = groupAdminHours;
+	}
+	
+	public void setGroupSystemHours(double groupSystemHours) {
+		this.groupSystemHours = groupSystemHours;
+	}
 	
 	public double getMaxHours() {
 		return maxHours;
@@ -163,8 +179,8 @@ public class HourCounter {
 	private void countSystemAdminGroup() {
 		List<Worker> groupSystem = this.getWorkersByGroup(Group.SYSTEM);
 		List<Worker> groupAdmin = this.getWorkersByGroup(Group.ADMIN);
-		this.addWorkersHours(groupSystem, "系统管理组", GROUP_SYSTEM_HOURS);
-		this.addWorkersHours(groupAdmin, "系统管理组", GROUP_ADMIN_HOURS);
+		this.addWorkersHours(groupSystem, "系统管理组", this.groupSystemHours);
+		this.addWorkersHours(groupAdmin, "系统管理组", this.groupAdminHours);
 	}
 	
 	/**
@@ -189,7 +205,7 @@ public class HourCounter {
 			for(DailyTable dailyTable: this.dailyTables) {
 				if(dailyTable.containsDate(date)) {
 					for(DailyWorker dailyWorker: dailyTable.getTable()) {
-						dailyWorker.worker.addHoursByName("周检", dailyWorker.numRooms * WEEKLY_CHECK_HOURS_PER_ROOM);
+						dailyWorker.worker.addHoursByName("周检", dailyWorker.numRooms * this.weeklyCheckHoursPerWeek);
 					}
 					contain = true;
 					break;
@@ -275,7 +291,7 @@ public class HourCounter {
 		for(DailyTable dailyTable: this.dailyTables) {
 			if(dailyTable.containsDate(workDate)) {
 				List<Worker> groupWorkers = dailyTable.getWorkersByGroup(group);
-				this.addWorkersHours(groupWorkers, "常检", DAILY_CHECK_HOURS);
+				this.addWorkersHours(groupWorkers, "常检", this.dailyCheckHoursPerday);
 				contain = true;
 				break;
 			}

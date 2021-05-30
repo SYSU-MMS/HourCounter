@@ -17,6 +17,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 
 /**
@@ -30,10 +31,17 @@ public class Main extends Application {
 	private HourListPane hourListPane;
 	private TablePane tablePane;
 	private ExportPane exportPane;
+	private Pane titlePane;
 	private FlowPane bottomPane;
 	private Button previousButton;
 	private Button nextButton;
 	private int paneState;
+	private String[] titles = {
+		"导入表格",
+		"设置日期",
+		"其他工时",
+		"导出表格"
+	};
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -44,23 +52,38 @@ public class Main extends Application {
 			primaryStage.setTitle("多媒体工时小助手");
 			primaryStage.setScene(scene);
 			
+			
 			this.datePane = new DatePane();
 			this.hourListPane = new HourListPane();
 			this.tablePane = new TablePane(primaryStage, this.hourListPane);
 			this.exportPane = new ExportPane(primaryStage, this.tablePane, this.datePane, this.hourListPane);
+			this.titlePane = new Pane();
 			this.bottomPane = new FlowPane();
 			
 			this.paneState = 0;
 			this.root.setCenter(this.tablePane);
 			this.initBottomButtons();
 			
+			this.titlePane.getChildren().add(new Label(titles[0]));
+			this.root.setTop(this.titlePane);
+			
 			this.bottomPane.getChildren().addAll(this.previousButton, this.nextButton);
 			this.root.setBottom(this.bottomPane);
+			
+			this.previousButton.setDisable(true);
 			
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * 设置当前面板的标题
+	 * @param title
+	 */
+	private void setTitleLabel(String title) {
+		((Label) this.titlePane.getChildren().get(0)).setText(title);
 	}
 	
 	/**
@@ -78,6 +101,7 @@ public class Main extends Application {
 					break;
 				case 1:
 					paneState--;
+					previousButton.setDisable(true);
 					root.setCenter(tablePane);
 					break;
 				case 2:
@@ -86,9 +110,11 @@ public class Main extends Application {
 					break;
 				case 3:
 					paneState--;
+					nextButton.setDisable(false);
 					root.setCenter(hourListPane);
 					break;
 				}
+				setTitleLabel(titles[paneState]);
 			}
 		});
 		this.nextButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -97,6 +123,7 @@ public class Main extends Application {
 				switch(paneState) {
 				case 0:
 					paneState++;
+					previousButton.setDisable(false);
 					root.setCenter(datePane);
 					break;
 				case 1:
@@ -105,10 +132,12 @@ public class Main extends Application {
 					break;
 				case 2:
 					paneState++;
+					nextButton.setDisable(true);
 					root.setCenter(exportPane);
 				case 3:
 					break;
 				}
+				setTitleLabel(titles[paneState]);
 			}
 		});
 	}

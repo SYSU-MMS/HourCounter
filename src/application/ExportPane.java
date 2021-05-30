@@ -18,7 +18,10 @@ import application.Worker.Group;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -27,13 +30,44 @@ import javafx.stage.Stage;
  * @author Syderny
  *
  */
-public class ExportPane extends FlowPane {
+public class ExportPane extends GridPane {
+	/**
+	 * 单项设置面板
+	 * @author Syderny
+	 *
+	 */
+	class SetUpPane extends FlowPane {
+		private Label titleLabel;
+		private Spinner<Double> hoursSpinner;
+		
+		SetUpPane(String title, double defaultHours, double stepHours) {
+			this.titleLabel = new Label(title);
+			this.hoursSpinner = new Spinner<Double>(0, 999, defaultHours, stepHours);
+			
+			this.getChildren().addAll(this.titleLabel, this.hoursSpinner);
+		}
+		
+		public double getHours() {
+			return this.hoursSpinner.getValue();
+		}
+	}
+	
 	private Button exportDetailTableButton;
 	private Button exportGrantTableButton;
 	private TablePane tablePane;
 	private DatePane datePane;
 	private HourListPane hourListPane;
 	private Stage primaryStage;
+	
+	private SetUpPane dailyHoursPane;
+	private SetUpPane weeklyHoursPane;
+	private SetUpPane adminHoursPane;
+	private SetUpPane systemHoursPane;
+	
+	public static final double DAILY_CHECK_HOURS_PER_DAY = 2;
+	public static final double WEEKLY_CHECK_HOURS_PER_WEEK = 1.5;
+	public static final double GROUP_ADMIN_HOURS_PER_MONTH = 40;
+	public static final double GROUP_SYSTEM_HOURS_PER_MONTH = 20;
 	
 	/**
 	 * 初始化导出面板，由于导出表格需要所有的信息，所以将其他面板传参进来
@@ -50,6 +84,11 @@ public class ExportPane extends FlowPane {
 		this.hourListPane = hourListPane;
 		this.primaryStage = primaryStage;
 		
+		this.dailyHoursPane = new SetUpPane("常检每日工时", DAILY_CHECK_HOURS_PER_DAY, 0.5);
+		this.weeklyHoursPane = new SetUpPane("周检每次工时", WEEKLY_CHECK_HOURS_PER_WEEK, 0.5);
+		this.adminHoursPane = new SetUpPane("管理组本月工时", GROUP_ADMIN_HOURS_PER_MONTH, 1);
+		this.systemHoursPane = new SetUpPane("系统组本月工时", GROUP_SYSTEM_HOURS_PER_MONTH, 1);
+		
 		this.exportDetailTableButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -61,7 +100,12 @@ public class ExportPane extends FlowPane {
 			}
 		});
 		
-		this.getChildren().addAll(this.exportDetailTableButton, this.exportGrantTableButton);
+		this.add(this.dailyHoursPane, 0, 0);
+		this.add(this.weeklyHoursPane, 0, 1);
+		this.add(this.adminHoursPane, 1, 0);
+		this.add(this.systemHoursPane, 1, 1);
+		this.add(this.exportDetailTableButton, 0, 2);
+		this.add(this.exportGrantTableButton, 1, 2);
 	}
 	
 	private String getTitleDate() {
@@ -120,11 +164,18 @@ public class ExportPane extends FlowPane {
 			HourCounter hourCounter = new HourCounter(this.tablePane.getWorkerList(), this.tablePane.getDutyTableList(), 
 					this.tablePane.getDailyTableList(), this.datePane.getWorkDates(),
 					this.datePane.getWeeklyDates(), this.datePane.getHoursLimit());
+			
 			hourCounter.setDutyRestDates(this.datePane.getDutyRestDates());
 			hourCounter.setDailyRestDates(this.datePane.getDailyRestDates());
 			hourCounter.setDailyChangeDates(this.datePane.getDailyChangeDates());
 			hourCounter.setDutyChangeDates(this.datePane.getDutyChangeDates());
 			hourCounter.setExtraHourLists(this.hourListPane.getExtraLists());
+			
+			hourCounter.setDailyCheckHoursPerday(this.dailyHoursPane.getHours());
+			hourCounter.setWeeklyCheckHoursPerWeek(this.weeklyHoursPane.getHours());
+			hourCounter.setGroupAdminHours(this.adminHoursPane.getHours());
+			hourCounter.setGroupSystemHours(this.systemHoursPane.getHours());
+			
 			hourCounter.count();
 			return hourCounter;
 		} catch (Exception e) {
