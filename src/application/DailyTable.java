@@ -15,10 +15,15 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import application.Worker.Group;
 
+/**
+ * 常检表类，用于读取和调用常检和周检信息
+ * @author Syderny
+ *
+ */
 public class DailyTable {
-	private Date startDate;
+	private Date startDate;				// 表格生效的日期
 	private Date endDate;
-	private List<DailyWorker> table;
+	private List<DailyWorker> table;	// 表格，即助理的信息队列
 	
 	public Date getStartDate() {
 		return startDate;
@@ -36,6 +41,11 @@ public class DailyTable {
 		return table;
 	}
 	
+	/**
+	 * 判断此日期是否可应用此表格
+	 * @param date
+	 * @return
+	 */
 	public boolean containsDate(Date date) {
 		return (date.after(this.startDate) && date.before(this.endDate)) ||
 				date.equals(this.startDate) || date.equals(this.endDate);
@@ -52,6 +62,12 @@ public class DailyTable {
 		return workers;
 	}
 	
+	/**
+	 * 检查表格格式是否合法，并且返回表头信息
+	 * @param excelPath
+	 * @return 表头所在列数
+	 * @throws Exception 表格格式错误
+	 */
 	public static Map<String, Integer> getAndCheckTableTitle(String excelPath) throws Exception {
 		Map<String, Integer> title2Col = new HashMap<String, Integer>();
 		Exception formatException = new Exception("常检表格式错误！");
@@ -76,6 +92,14 @@ public class DailyTable {
 		return title2Col;
 	}
 	
+	/**
+	 * 初始化表格，读取.xlsx文件
+	 * @param workerList
+	 * @param excelPath
+	 * @param startDate
+	 * @param endDate
+	 * @throws Exception 表格内助理信息不含在预先导入的通讯录里
+	 */
 	public DailyTable(List<Worker> workerList, String excelPath, Date startDate, Date endDate) throws Exception {
 		this.table = new ArrayList<DailyWorker>();
 		this.startDate = startDate;
@@ -154,6 +178,11 @@ public class DailyTable {
 //	}
 }
 
+/**
+ * 常检助理类，用于保存当前表格中助理的组别和教室
+ * @author Syderny
+ *
+ */
 class DailyWorker {
 	Worker worker;
 	Group group;

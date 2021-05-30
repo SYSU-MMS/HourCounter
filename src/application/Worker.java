@@ -9,6 +9,11 @@ import java.util.Map;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.*;
 
+/**
+ * 助理类
+ * @author Syderny
+ *
+ */
 public class Worker {
 	public enum Group {
 		A, B, AB, C, SYSTEM, ADMIN
@@ -35,6 +40,11 @@ public class Worker {
 		this.restHours = 0;
 	}
 	
+	/**
+	 * 返回对应项目的工时，如周检或值班的工时。只有HourCounter计算之后才有工时信息
+	 * @param name
+	 * @return
+	 */
 	public double getHoursByName(String name) {
 		if(hourList.containsKey(name)) {
 			return hourList.get(name);
@@ -42,6 +52,11 @@ public class Worker {
 		return -1;
 	}
 	
+	/**
+	 * 添加对应项目的工时，如常检或周检等
+	 * @param name
+	 * @param hours
+	 */
 	public void addHoursByName(String name, double hours) {
 		if(hourList.containsKey(name)) {
 			hourList.put(name, hourList.get(name) + hours);
@@ -50,6 +65,10 @@ public class Worker {
 		}
 	}
 	
+	/**
+	 * 获取累计的总工时，包括上月积余的
+	 * @return
+	 */
 	public double getTotalHours() {
 		double tot = this.preHours;
 		for(String name: hourList.keySet()) {
@@ -58,6 +77,12 @@ public class Worker {
 		return tot;
 	}
 	
+	/**
+	 * 读取通讯录信息，初始化助理信息列表
+	 * @param excelPath
+	 * @return 助理信息列表，有时候也会被说成通讯录
+	 * @throws Exception 格式不对
+	 */
 	public static List<Worker> initWorkerList(String excelPath) throws Exception {
 		List<Worker> workerList = new ArrayList<Worker>();
 		Map<String, Integer> title2Col = new HashMap<String, Integer>();

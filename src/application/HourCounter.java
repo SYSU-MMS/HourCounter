@@ -9,7 +9,11 @@ import java.util.Map;
 
 import application.Worker.Group;
 
-
+/**
+ * 计算工时的类，集合各类信息，计算出助理的最终工时
+ * @author Syderny
+ *
+ */
 public class HourCounter {
 	private double maxHours;
 	
@@ -19,7 +23,7 @@ public class HourCounter {
 	private List<DutyTable> dutyTables;
 	private List<DailyTable> dailyTables;
 	private List<Date> weeklyDates;
-	private List<String> hourNames;
+	private List<String> hourNames;				// 保存不同工时累积的表头，比如测光、全员大会、值班等
 	
 	private List<Date> dutyRestDates;
 	private List<Date> dailyRestDates;
@@ -106,11 +110,17 @@ public class HourCounter {
 		return weeklyDates;
 	}
 	
+	/**
+	 * 计算工时
+	 * @throws Exception
+	 */
 	public void count() throws Exception {
+		// 先清空助理之前的工时
 		for(Worker worker: this.workerList) {
 			worker.cleanHours();
 		}
 		
+		// 添加工时项目的表头
 		this.hourNames.add("常检");
 		this.hourNames.add("周检");
 		this.hourNames.add("值班");
@@ -123,6 +133,7 @@ public class HourCounter {
 		this.countWeekly();
 		this.countSystemAdminGroup();
 		
+		// 计算除了基础值班、常检周检外的工时
 		for(ExtraHourList extraList: this.extraHourLists) {
 			this.hourNames.add(extraList.title);
 			this.countExtra(extraList);
@@ -130,6 +141,7 @@ public class HourCounter {
 		
 		List<Worker> removeList = new ArrayList<Worker>();
 		for(Worker worker: this.workerList) {
+			// 没常检组别的都是C组
 			double totalHours = worker.getTotalHours();
 			if(worker.group == null && totalHours != 0) {
 				worker.group = Group.C;
@@ -141,9 +153,13 @@ public class HourCounter {
 			worker.restHours = totalHours - worker.finalHours;
 		}
 		
+		// 移除完全没有工时的助理
 		this.workerList.removeAll(removeList);
 	}
 	
+	/**
+	 * 计算管理组和系统组的工时
+	 */
 	private void countSystemAdminGroup() {
 		List<Worker> groupSystem = this.getWorkersByGroup(Group.SYSTEM);
 		List<Worker> groupAdmin = this.getWorkersByGroup(Group.ADMIN);
@@ -151,6 +167,10 @@ public class HourCounter {
 		this.addWorkersHours(groupAdmin, "系统管理组", GROUP_ADMIN_HOURS);
 	}
 	
+	/**
+	 * 计算除常规工时外的工时项目，如测光和旷工等
+	 * @param extraList
+	 */
 	private void countExtra(ExtraHourList extraList) {
 		Map<Worker, Double> hourList = extraList.extraHours;
 		for(Worker worker: hourList.keySet()) {
@@ -159,6 +179,10 @@ public class HourCounter {
 		}
 	}
 	
+	/**
+	 * 计算周检工时，按常检表的教室数来算
+	 * @throws Exception 常检表的有效日期不包含本日，可能漏设置了
+	 */
 	private void countWeekly() throws Exception {
 		for(Date date: this.weeklyDates) {
 			boolean contain = false;

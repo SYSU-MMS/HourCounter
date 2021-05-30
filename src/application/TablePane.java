@@ -18,13 +18,29 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+/**
+ * 表格导入的面板，导入通讯录、值班表、常检表等等
+ * @author Syderny
+ *
+ */
 public class TablePane extends ScrollPane {
+	/**
+	 * 值班表或常检表表格的导入和设置面板
+	 * @author Syderny
+	 *
+	 */
 	class TableImportPane extends FlowPane {
 		private Label titleLabel;
 		private Button importButton;
 		private List<FlowPane> tableDatePanes;
 		private List<String> excelPaths;
 		
+		/**
+		 * 创建一个表格的设置面板，用于设置此表格的有效时间
+		 * @param excelPath
+		 * @param startDate
+		 * @param endDate
+		 */
 		private void createTableDatePane(String excelPath, Date startDate, Date endDate) {
 			String[] dirs = excelPath.split("\\\\");
 			String fileName = dirs[dirs.length-1];
@@ -54,21 +70,31 @@ public class TablePane extends ScrollPane {
 			this.tableDatePanes.add(tableDatePane);
 		}
 		
+		/**
+		 * 初始化表格的导入设置面板
+		 * @param title "常检表"或"值班表"
+		 */
 		TableImportPane(String title) {
 			this.titleLabel = new Label(title);
 			this.importButton = new Button("导入");
 			this.tableDatePanes = new ArrayList<FlowPane>();
 			this.excelPaths = new ArrayList<String>();
 			
+			/**
+			 * 点击按钮弹出文件选择器
+			 */
 			this.importButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
 					FileChooser excelChooser = new FileChooser();
 					excelChooser.setTitle("选择" + titleLabel.getText() + "表格");
 					excelChooser.setInitialDirectory(new File("."));
+					
+					// 获取上一次导入表格时的目录
 					if(!excelPaths.isEmpty()) {
 						excelChooser.setInitialDirectory(new File(excelPaths.get(excelPaths.size()-1)).getParentFile());
 					}
+					
 					excelChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XLSX", "*.xlsx"));
 					File excelFile = excelChooser.showOpenDialog(primaryStage);
 					
@@ -94,6 +120,7 @@ public class TablePane extends ScrollPane {
 				}
 			});
 			
+			// 自动导入上次导入的表格，包括值班表和常检表
 			List<TableInfo> tableInfoList = null;
 			try {
 				if(titleLabel.getText() == "常检表") {
@@ -133,10 +160,8 @@ public class TablePane extends ScrollPane {
 	private HourListPane hourListPane;
 	private List<Worker> workerList;
 	
-	public static final int WIDTH = 250;
-	
-	TablePane(Stage primaryStage, HourListPane hourListPane) {
-		this.setPrefWidth(WIDTH);
+	// 初始化表格面板
+	public TablePane(Stage primaryStage, HourListPane hourListPane) {
 		
 		this.vbox = new VBox();
 		this.primaryStage = primaryStage;
@@ -150,10 +175,19 @@ public class TablePane extends ScrollPane {
 		this.setContent(this.vbox);
 	}
 	
+	/**
+	 * 返回导入的助理信息列表
+	 * @return
+	 */
 	public List<Worker> getWorkerList() {
 		return this.workerList;
 	}
 	
+	/**
+	 * 返回导入的值班表列表
+	 * @return
+	 * @throws Exception
+	 */
 	public List<DutyTable> getDutyTableList() throws Exception{
 		List<DutyTable> dutyTableList = new ArrayList<DutyTable>();
 		List<TableInfo> tableInfoList = new ArrayList<TableInfo>();
@@ -171,10 +205,20 @@ public class TablePane extends ScrollPane {
 			dutyTableList.add(new DutyTable(this.workerList, excelPath, startDate, endDate));
 		}
 		
-		HistoryIO.writeDutyTableFileInfo(tableInfoList);
+		try {
+			HistoryIO.writeDutyTableFileInfo(tableInfoList);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 		return dutyTableList;
 	}
 	
+	/**
+	 * 返回导入的常检表列表
+	 * @return
+	 * @throws Exception
+	 */
 	public List<DailyTable> getDailyTableList() throws Exception{
 		List<DailyTable> dailyTableList = new ArrayList<DailyTable>();
 		List<TableInfo> tableInfoList = new ArrayList<TableInfo>();
@@ -192,10 +236,17 @@ public class TablePane extends ScrollPane {
 			dailyTableList.add(new DailyTable(this.workerList, excelPath, startDate, endDate));
 		}
 		
-		HistoryIO.writeDailyTableFileInfo(tableInfoList);
+		try {
+			HistoryIO.writeDailyTableFileInfo(tableInfoList);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		return dailyTableList;
 	}
 	
+	/**
+	 * 创建一个通讯录的导入面板
+	 */
 	private void createWorkerListImportPane() {
 		this.workerListPane = new FlowPane();
 		Label titleLabel = new Label("通讯录");
@@ -249,6 +300,11 @@ public class TablePane extends ScrollPane {
 		this.vbox.getChildren().add(this.workerListPane);
 	}
 	
+	/**
+	 * 将Date对象转为LocalDate对象
+	 * @param date
+	 * @return 
+	 */
 	public static LocalDate date2LocalDate(Date date) {
 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 	}

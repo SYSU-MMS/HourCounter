@@ -16,6 +16,11 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * 额外工时信息类，用于记录常规工时外的工时项目，如测光、旷工等工时的加减
+ * @author Syderny
+ *
+ */
 class ExtraHourList {
 	String title;
 	Map<Worker, Double> extraHours;
@@ -25,6 +30,11 @@ class ExtraHourList {
 	}
 }
 
+/**
+ * 用于设置额外工时信息的面板
+ * @author Syderny
+ *
+ */
 public class HourListPane extends ScrollPane {
 	class ExtraListPane extends FlowPane {
 		private TextArea titleTextArea;
@@ -39,6 +49,10 @@ public class HourListPane extends ScrollPane {
 			this.titleTextArea.setText(title);;
 		}
 		
+		/**
+		 * 按照面板设置获取额外的工时信息
+		 * @return
+		 */
 		@SuppressWarnings("unchecked")
 		public ExtraHourList getExtraList() {
 			ExtraHourList extraList = new ExtraHourList();
@@ -66,6 +80,9 @@ public class HourListPane extends ScrollPane {
 			this.removeSelfButton = new Button("删除");
 			this.namePanes = new ArrayList<FlowPane>();
 			
+			/**
+			 * 添加新的助理和对应的工时加减
+			 */
 			this.addNameButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
@@ -74,6 +91,9 @@ public class HourListPane extends ScrollPane {
 					Spinner<Double> hoursSpinner = new Spinner<Double>(-10, 10, 1, 0.5);
 					Button removeButton = new Button("删除");
 					
+					/**
+					 * 移除此助理的工时加减信息
+					 */
 					removeButton.setOnAction(new EventHandler<ActionEvent>() {
 						@Override
 						public void handle(ActionEvent event) {
@@ -98,6 +118,9 @@ public class HourListPane extends ScrollPane {
 			this.getChildren().addAll(this.addNameButton, this.removeSelfButton, this.titleTextArea);
 		}
 		
+		/**
+		 * 移除自身，即此项目的工时列表
+		 */
 		private void removeSelf() {
 			extraListPanes.remove(this);
 			vbox.getChildren().remove(this);
@@ -112,6 +135,10 @@ public class HourListPane extends ScrollPane {
 	
 	public static final int WIDTH = 300;
 	
+	/**
+	 * 根据面板的设置获取额外项目工时列表
+	 * @return
+	 */
 	public List<ExtraHourList> getExtraLists() {
 		List<ExtraHourList> extraLists = new ArrayList<ExtraHourList>();
 		for(ExtraListPane extraListPane: this.extraListPanes) {
@@ -142,6 +169,7 @@ public class HourListPane extends ScrollPane {
 		ExtraListPane absentListPane = new ExtraListPane();
 		ExtraListPane omissionListPane = new ExtraListPane();
 		
+		// 一些常用的工时项目
 		spotCheckListPane.setTitle("参与抽查");
 		meteringListPane.setTitle("测光");
 		absentListPane.setTitle("旷工");

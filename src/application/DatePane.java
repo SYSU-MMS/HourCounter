@@ -18,7 +18,17 @@ import javafx.scene.control.Spinner;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * 设定日期的面板，包括结算日期和休息日等
+ * @author Syderny
+ *
+ */
 public class DatePane extends ScrollPane {
+	/**
+	 * 设定当前结算工时的月份的面板
+	 * @author Syderny
+	 *
+	 */
 	class TitleDatePane extends FlowPane {
 		private Label titleLabel;
 		private Spinner<Integer> yearSpinner;
@@ -31,25 +41,35 @@ public class DatePane extends ScrollPane {
 			this.titleLabel = new Label("月份：");
 			this.yearSpinner = new Spinner<Integer>(2000, 9999, cal.get(Calendar.YEAR));
 			this.yearLabel = new Label("年");
-			this.monthSpinner = new Spinner<Integer>(1, 12, cal.get(Calendar.MONTH));
+			this.monthSpinner = new Spinner<Integer>(1, 12, cal.get(Calendar.MONTH)+1);
 			this.monthLabel = new Label("月");
 			
 			this.getChildren().addAll(this.titleLabel, this.yearSpinner, this.yearLabel, this.monthSpinner, this.monthLabel);
 		}
 	}
 	
+	/**
+	 * 设定工时上限的面板
+	 * @author Syderny
+	 *
+	 */
 	class LimitPane extends FlowPane {
 		private Label limitLabel;
 		private Spinner<Integer> limitSpinner;
 		
 		LimitPane() {
-			this.limitLabel = new Label("本月工资上限：");
+			this.limitLabel = new Label("本月工时上限：");
 			this.limitSpinner = new Spinner<Integer>(1, 200, 40);
 			
 			this.getChildren().addAll(this.limitLabel, this.limitSpinner);
 		}
 	}
 	
+	/**
+	 * 设定结算起止日期的面板
+	 * @author Syderny
+	 *
+	 */
 	class WorkDatePane extends FlowPane {
 		private Label titleLabel;
 		private DatePicker startDatePicker;
@@ -66,6 +86,11 @@ public class DatePane extends ScrollPane {
 		}
 	}
 	
+	/**
+	 * 设定周检日期的面板
+	 * @author Syderny
+	 *
+	 */
 	class WeeklyDatePane extends FlowPane {
 		private Label titleLabel;
 		private Button addButton;
@@ -104,6 +129,11 @@ public class DatePane extends ScrollPane {
 		}
 	}
 	
+	/**
+	 * 设定值班或常检休息日的面板
+	 * @author Syderny
+	 *
+	 */
 	class RestDatePane extends FlowPane {
 		private Label titleLabel;
 		private Button addSegmentButton;
@@ -151,6 +181,11 @@ public class DatePane extends ScrollPane {
 		}
 	}
 	
+	/**
+	 * 设定常检或值班转换日的面板，就是调休时，某些日期需要更换成周几的值班或常检
+	 * @author Syderny
+	 *
+	 */
 	class ChangeDatePane extends FlowPane {
 		private Label titleLabel;
 		private Button addChangeButton;
@@ -212,48 +247,38 @@ public class DatePane extends ScrollPane {
 	private ChangeDatePane dailyChangePane;
 	private ChangeDatePane dutyChangePane;
 	
-	public static final int WIDTH = 250;
-	
 	public DatePane() {
-		this.setPrefWidth(WIDTH);
-		
 		this.vbox = new VBox();
 		this.getChildren().add(this.vbox);
 		
 		this.titleDatePane = new TitleDatePane();
-		this.titleDatePane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.titleDatePane);
 		
 		this.limitPane = new LimitPane();
-		this.limitPane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.limitPane);
 		
 		this.workDatePane = new WorkDatePane();
-		this.workDatePane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.workDatePane);
 		
 		this.weeklyDatePane = new WeeklyDatePane();
-		this.weeklyDatePane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.weeklyDatePane);
 		
 		this.dailyRestPane = new RestDatePane("常检休息日");
-		this.dailyRestPane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.dailyRestPane);
 		
 		this.dutyRestPane = new RestDatePane("值班休息日");
-		this.dutyRestPane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.dutyRestPane);
 		
 		this.dailyChangePane = new ChangeDatePane("常检日期转换");
-		this.dailyChangePane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.dailyChangePane);
 		
 		this.dutyChangePane = new ChangeDatePane("值班日期转换");
-		this.dutyChangePane.setPrefWidth(WIDTH);
 		this.vbox.getChildren().add(this.dutyChangePane);
 		
 		this.setContent(this.vbox);
 	}
+	
+	// 以下的方法用于获取本面板设定的各类信息
 	
 	public List<Date> getWorkDates() {
 		Date startDate = Main.string2Date(this.workDatePane.startDatePicker.getValue().toString());

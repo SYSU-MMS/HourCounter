@@ -14,6 +14,9 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+/**
+ * 值班表类
+ */
 public class DutyTable {
 	private Date startDate;
 	private Date endDate;
@@ -35,6 +38,11 @@ public class DutyTable {
 		return table;
 	}
 	
+	/**
+	 * 此日期是否在此表的有效时间内
+	 * @param date
+	 * @return
+	 */
 	public boolean containsDate(Date date) {
 		return (date.after(this.startDate) && date.before(this.endDate)) ||
 				date.equals(this.startDate) || date.equals(this.endDate);
@@ -44,6 +52,12 @@ public class DutyTable {
 		return table.get(day);
 	}
 	
+	/**
+	 * 检查格式，并且返回表头信息
+	 * @param excelPath
+	 * @return 表头对应列数
+	 * @throws Exception 格式不对
+	 */
 	public static Map<String, Integer> getAndCheckTableTitle(String excelPath) throws Exception {
 		Map<String, Integer> title2Col = new HashMap<String, Integer>();
 		Exception formatException = new Exception("值班表格式错误！");
@@ -69,6 +83,14 @@ public class DutyTable {
 		return title2Col;
 	}
 	
+	/**
+	 * 初始化，读取值班表格.xlsx
+	 * @param workerList
+	 * @param excelPath
+	 * @param startDate
+	 * @param endDate
+	 * @throws Exception 表格中有助理的信息在通讯录中没有
+	 */
 	public DutyTable(List<Worker> workerList, String excelPath, Date startDate, Date endDate) throws Exception {
 		this.table = new ArrayList<List<DutyPeriod>>();
 		for(int i = 0; i < 7; i++) {
@@ -112,6 +134,8 @@ public class DutyTable {
 					this.table.get(j-1).add(dutyPeriod);
 				}
 			}else if(strHours.length == 2) {
+				// 如果被下划线分开，如“2/1.5”，那就前一个代表工作日的时长，后一个代表周末的时长
+				
 				for(int j = 1; j <= 5; j++) {
 					DutyPeriod dutyPeriod = new DutyPeriod();
 					dutyPeriod.hours = Double.parseDouble(strHours[0]);
@@ -177,6 +201,11 @@ public class DutyTable {
 //	}
 }
 
+/**
+ * 值班时段类，用于存储某时段值班的时长和助理名单
+ * @author Syderny
+ *
+ */
 class DutyPeriod {
 	List<Worker> workers;
 	double hours;

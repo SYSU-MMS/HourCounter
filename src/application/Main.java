@@ -19,6 +19,11 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
+/**
+ * 主界面类
+ * @author Syderny
+ *
+ */
 public class Main extends Application {
 	private BorderPane root;
 	private DatePane datePane;
@@ -36,6 +41,7 @@ public class Main extends Application {
 			this.root = new BorderPane();
 			Scene scene = new Scene(this.root,800,500);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			primaryStage.setTitle("多媒体工时小助手");
 			primaryStage.setScene(scene);
 			
 			this.datePane = new DatePane();
@@ -57,6 +63,9 @@ public class Main extends Application {
 		}
 	}
 	
+	/**
+	 * 初始化底下的两个上一步下一步按钮
+	 */
 	private void initBottomButtons() {
 		this.previousButton = new Button("上一步");
 		this.nextButton = new Button("下一步");
@@ -108,6 +117,11 @@ public class Main extends Application {
 		launch(args);
 	}
 	
+	/**
+	 * 将字符串转换成Date日期对象
+	 * @param strDate 如"2021-5-30"
+	 * @return 对应的Date对象
+	 */
 	public static Date string2Date(String strDate) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date date = null;
@@ -119,6 +133,10 @@ public class Main extends Application {
         return date;
 	}
 	
+	/**
+	 * 弹出异常信息的警告窗口
+	 * @param e 对应的异常
+	 */
 	public static void alertError(Exception e) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle("错误");

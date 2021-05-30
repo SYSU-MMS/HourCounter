@@ -22,6 +22,11 @@ import javafx.scene.layout.FlowPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+/**
+ * 导出面板，导出工资明细表、发放表等
+ * @author Syderny
+ *
+ */
 public class ExportPane extends FlowPane {
 	private Button exportDetailTableButton;
 	private Button exportGrantTableButton;
@@ -30,6 +35,13 @@ public class ExportPane extends FlowPane {
 	private HourListPane hourListPane;
 	private Stage primaryStage;
 	
+	/**
+	 * 初始化导出面板，由于导出表格需要所有的信息，所以将其他面板传参进来
+	 * @param primaryStage
+	 * @param tablePane
+	 * @param datePane
+	 * @param hourListPane
+	 */
 	public ExportPane(Stage primaryStage, TablePane tablePane, DatePane datePane, HourListPane hourListPane) {
 		this.exportDetailTableButton = new Button("导出工资明细表");
 		this.exportGrantTableButton = new Button("导出劳务发放表");
@@ -56,6 +68,11 @@ public class ExportPane extends FlowPane {
 		return this.datePane.getTitleDate();
 	}
 	
+	/**
+	 * 弹出文件选择器获取导出的目录
+	 * @param tableTitle
+	 * @return
+	 */
 	private String getDirectory(String tableTitle) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("保存表格");
@@ -94,6 +111,10 @@ public class ExportPane extends FlowPane {
 //		return result.get() == ButtonType.OK;
 //	}
 	
+	/**
+	 * 初始化一个HourCounter用于计算工时
+	 * @return
+	 */
 	private HourCounter initHourCounter() {
 		try {
 			HourCounter hourCounter = new HourCounter(this.tablePane.getWorkerList(), this.tablePane.getDutyTableList(), 
@@ -114,6 +135,11 @@ public class ExportPane extends FlowPane {
 		}
 	}
 	
+	/**
+	 * 导出工资明细表
+	 * @param counter
+	 * @param excelPath
+	 */
 	private void exportDetailTable(HourCounter counter, String excelPath) {
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet sheet = workbook.createSheet();
@@ -121,6 +147,8 @@ public class ExportPane extends FlowPane {
 		XSSFCellStyle cellStyle = workbook.createCellStyle();
 		cellStyle.setAlignment(HorizontalAlignment.CENTER);
 		
+		
+		// ============创建表头===============
 		String[] infoTitle = {"序号", "组别", "学号", "姓名"};
 		for(int i = 0; i < infoTitle.length; i++) {
 			XSSFCell cell = titleRow.createCell(i);
@@ -141,7 +169,9 @@ public class ExportPane extends FlowPane {
 			cell.setCellStyle(cellStyle);
 			cell.setCellValue(totalTitle[i]);
 		}
+		// ================================
 		
+		// 按照组别排序助理，ABC组在前，系统管理在后
 		List<Worker> workerList = counter.getWorkerList();
 		Collections.sort(workerList, new Comparator<Worker>() {
 			@Override
@@ -153,9 +183,12 @@ public class ExportPane extends FlowPane {
 			}
 		});
 		
+		// 遍历助理，一行行添加助理信息
 		for(int i = 0; i < workerList.size(); i++) {
 			XSSFRow row = sheet.createRow(i+1);
 			Worker worker = workerList.get(i);
+			
+			// 以下是设置助理的基本信息在对应的单元格
 			
 			XSSFCell indexCell = row.createCell(0);
 			indexCell.setCellStyle(cellStyle);
@@ -181,6 +214,7 @@ public class ExportPane extends FlowPane {
 			nameCell.setCellStyle(cellStyle);
 			nameCell.setCellValue(worker.name);
 			
+			// 以下是设置此助理在各个工时项目的工时在对应的单元格
 			
 			for(int j = 0; j < numHourNames; j++) {
 				XSSFCell cell = row.createCell(j+4);
@@ -190,6 +224,8 @@ public class ExportPane extends FlowPane {
 					cell.setCellValue("");
 				}
 			}
+			
+			// 以下是"本月总计", "上月积余", "劳务发放表工时", "本月结余", ["备注"]的信息
 			
 			XSSFCell totalCell = row.createCell(4 + numHourNames);
 			double totalHours = worker.getTotalHours();
@@ -205,6 +241,7 @@ public class ExportPane extends FlowPane {
 			RestCell.setCellValue(worker.restHours);
 		}
 		
+		// 导出文件
 		File file = new File(excelPath);
 		try {
 			file.createNewFile();

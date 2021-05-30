@@ -14,6 +14,11 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/**
+ * 表格的历史调用信息
+ * @author Syderny
+ *
+ */
 class TableInfo {
 	String path, startDate, endDate;
 	TableInfo(){
@@ -28,6 +33,11 @@ class TableInfo {
 	}
 }
 
+/**
+ * 用于操作历史文件读取信息的类，下一次选择文件时自动定位历史位置，或者直接读取
+ * @author Syderny
+ * 使用了Java DOM来操作一个同目录下的history.xml文件
+ */
 public class HistoryIO {
 	
 	public static final String HISTORY_XML_PATH = "history.xml";
