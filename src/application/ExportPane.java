@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -18,9 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import application.Worker.Group;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -63,26 +60,39 @@ public class ExportPane extends FlowPane {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("保存表格");
 		fileChooser.setInitialDirectory(new File("."));
+		try {
+			String historyPath = HistoryIO.readExportFileInfo();
+			if(new File(historyPath).exists()) {
+				fileChooser.setInitialDirectory(new File(historyPath).getParentFile());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		fileChooser.setInitialFileName(this.getTitleDate() + tableTitle + ".xlsx");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XLSX", "*.xlsx"));
 		File file = fileChooser.showSaveDialog(this.primaryStage);
 		if(file != null) {
-			if(file.isDirectory() && !this.getCoverConfirm(file.getName())) {
-				return null;
+//			if(file.exists() && !this.getCoverConfirm(file.getName())) {
+//				return null;
+//			}
+			try {
+				HistoryIO.writeExportFileInfo(file.getAbsolutePath());
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			return file.getAbsolutePath();
 		}
 		return null;
 	}
 	
-	private boolean getCoverConfirm(String fileName) {
-		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-		alert.setTitle("确认保存");
-		alert.setHeaderText(fileName + " " + "已存在");
-		alert.setContentText("确认覆盖它吗？");
-		Optional<ButtonType> result = alert.showAndWait();
-		return result.get() == ButtonType.OK;
-	}
+//	private boolean getCoverConfirm(String fileName) {
+//		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+//		alert.setTitle("确认保存");
+//		alert.setHeaderText(fileName + " " + "已存在");
+//		alert.setContentText("确认覆盖它吗？");
+//		Optional<ButtonType> result = alert.showAndWait();
+//		return result.get() == ButtonType.OK;
+//	}
 	
 	private HourCounter initHourCounter() {
 		try {
