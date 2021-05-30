@@ -279,17 +279,16 @@ public class ExportPane extends GridPane {
 			// 以下是"本月总计", "上月积余", "劳务发放表工时", "本月结余", ["备注"]的信息
 			
 			XSSFCell totalCell = row.createCell(4 + numHourNames);
-			double totalHours = worker.getTotalHours();
-			totalCell.setCellValue(totalHours);
+			totalCell.setCellFormula(String.format("SUM(%c%d:%c%d)", 'E', i+2, 'A'+4+numHourNames-1, i+2));
 			
 			XSSFCell preRestCell = row.createCell(5 + numHourNames);
-			preRestCell.setCellValue(worker.preHours);
+			preRestCell.setCellValue(worker.preRestHours);
 			
 			XSSFCell finalCell = row.createCell(6 + numHourNames);
-			finalCell.setCellValue(worker.finalHours);
+			finalCell.setCellFormula(String.format("MIN(%c%d,%f)", 'A'+4+numHourNames, i+2, counter.getMaxHours()));
 			
-			XSSFCell RestCell = row.createCell(7 + numHourNames);
-			RestCell.setCellValue(worker.restHours);
+			XSSFCell restCell = row.createCell(7 + numHourNames);
+			restCell.setCellFormula(String.format("%c%d-%c%d", 'A'+4+numHourNames, i+2, 'A'+6+numHourNames, i+2));
 		}
 		
 		// 导出文件

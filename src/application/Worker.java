@@ -23,7 +23,7 @@ public class Worker {
 	Group group;
 	String phone, bankcard, studentID;
 	Map<String, Double> hourList;
-	double preHours, finalHours, restHours;
+	double preRestHours, finalHours, restHours;
 	
 	public Worker() {
 		this.hourList = new HashMap<String, Double>();
@@ -70,7 +70,7 @@ public class Worker {
 	 * @return
 	 */
 	public double getTotalHours() {
-		double tot = this.preHours;
+		double tot = this.preRestHours;
 		for(String name: hourList.keySet()) {
 			tot += hourList.get(name);
 		}
@@ -135,7 +135,7 @@ public class Worker {
 			} 
 			if(row.getCell(title2Col.get("上月积余")) != null) {
 				row.getCell(title2Col.get("上月积余")).setCellType(CellType.NUMERIC);
-				worker.preHours = row.getCell(title2Col.get("上月积余")).getNumericCellValue();
+				worker.preRestHours = row.getCell(title2Col.get("上月积余")).getNumericCellValue();
 			}
 			
 			workerList.add(worker);
