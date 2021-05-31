@@ -1,15 +1,23 @@
 package application;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -38,17 +46,17 @@ public class ExportPane extends GridPane {
 	 */
 	class SetUpPane extends FlowPane {
 		private Label titleLabel;
-		private Spinner<Double> hoursSpinner;
+		private Spinner<Double> spinner;
 		
 		SetUpPane(String title, double defaultHours, double stepHours) {
 			this.titleLabel = new Label(title);
-			this.hoursSpinner = new Spinner<Double>(0, 999, defaultHours, stepHours);
+			this.spinner = new Spinner<Double>(0, 999, defaultHours, stepHours);
 			
-			this.getChildren().addAll(this.titleLabel, this.hoursSpinner);
+			this.getChildren().addAll(this.titleLabel, this.spinner);
 		}
 		
-		public double getHours() {
-			return this.hoursSpinner.getValue();
+		public double getValue() {
+			return this.spinner.getValue();
 		}
 	}
 	
@@ -63,11 +71,13 @@ public class ExportPane extends GridPane {
 	private SetUpPane weeklyHoursPane;
 	private SetUpPane adminHoursPane;
 	private SetUpPane systemHoursPane;
+	private SetUpPane paymentPane;
 	
 	public static final double DAILY_CHECK_HOURS_PER_DAY = 2;
 	public static final double WEEKLY_CHECK_HOURS_PER_WEEK = 1.5;
 	public static final double GROUP_ADMIN_HOURS_PER_MONTH = 40;
 	public static final double GROUP_SYSTEM_HOURS_PER_MONTH = 20;
+	public static final double PAYMENT_PER_HOURS = 25;
 	
 	/**
 	 * 初始化导出面板，由于导出表格需要所有的信息，所以将其他面板传参进来
@@ -88,24 +98,224 @@ public class ExportPane extends GridPane {
 		this.weeklyHoursPane = new SetUpPane("周检每次工时", WEEKLY_CHECK_HOURS_PER_WEEK, 0.5);
 		this.adminHoursPane = new SetUpPane("管理组本月工时", GROUP_ADMIN_HOURS_PER_MONTH, 1);
 		this.systemHoursPane = new SetUpPane("系统组本月工时", GROUP_SYSTEM_HOURS_PER_MONTH, 1);
+		this.paymentPane = new SetUpPane("每小时薪酬", PAYMENT_PER_HOURS, 1);
 		
 		this.exportDetailTableButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				HourCounter hourCounter = initHourCounter();
 				if(hourCounter != null) {
-					String dirPath = getDirectory("工资明细表");
-					exportDetailTable(hourCounter, dirPath);					
+					String dirPath = getSaveDirectory("工资明细表");
+					if(dirPath != null) {
+						exportDetailTable(hourCounter, dirPath);					
+					}
 				}
 			}
 		});
 		
-		this.add(this.dailyHoursPane, 0, 0);
-		this.add(this.weeklyHoursPane, 0, 1);
-		this.add(this.adminHoursPane, 1, 0);
-		this.add(this.systemHoursPane, 1, 1);
-		this.add(this.exportDetailTableButton, 0, 2);
-		this.add(this.exportGrantTableButton, 1, 2);
+		this.exportGrantTableButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				FileChooser excelChooser = new FileChooser();
+				excelChooser.setTitle("选择工资明细表格");
+				excelChooser.setInitialDirectory(new File("."));
+				try {
+					String historyPath = HistoryIO.readExportFileInfo();
+					if(new File(historyPath).getParentFile().isDirectory()) {
+						excelChooser.setInitialDirectory(new File(historyPath).getParentFile());
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				excelChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XLSX", "*.xlsx"));
+				File excelFile = excelChooser.showOpenDialog(primaryStage);
+				
+				if(excelFile != null) {
+					try {
+						getAndCheckDetailTableTitle(excelFile.getAbsolutePath());
+						String exportPath =  getSaveDirectory("多媒体勤工助学劳务发放表");
+						if(exportPath != null) {
+							exportGrantTable(excelFile.getAbsolutePath(), exportPath);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						Main.alertError(e);
+					}
+				}
+			}
+		});
+		
+		this.add(this.paymentPane, 0, 0, 2, 1);
+		this.add(this.dailyHoursPane, 0, 1);
+		this.add(this.weeklyHoursPane, 0, 2);
+		this.add(this.adminHoursPane, 1, 1);
+		this.add(this.systemHoursPane, 1, 2);
+		this.add(this.exportDetailTableButton, 0, 3);
+		this.add(this.exportGrantTableButton, 1, 3);
+	}
+	
+	/**
+	 * 检查明细表格式是否正确，返回表头信息
+	 * @param excelPath
+	 * @return 表头对应列数
+	 * @throws Exception 格式不对，这不是明细表
+	 */
+	public static Map<String, Integer> getAndCheckDetailTableTitle(String excelPath) throws Exception {
+		Map<String, Integer> title2Col = new HashMap<String, Integer>();
+		Exception formatException = new Exception("工资明细表格式错误！");
+		
+		XSSFWorkbook xssfWorkbook = new XSSFWorkbook(new FileInputStream(excelPath));
+		XSSFSheet sheet = xssfWorkbook.getSheetAt(0);
+		
+		XSSFRow titleRow = sheet.getRow(0);
+		for(int i = 0; i < titleRow.getLastCellNum(); i++) {
+			XSSFCell cell = titleRow.getCell(i);
+			if(cell == null) {
+				throw formatException;
+			}
+			title2Col.put(cell.getStringCellValue().replaceAll(" ", ""), i);
+		}
+		
+		if(!title2Col.containsKey("本月总计") || !title2Col.containsKey("劳务发放表工时")) {
+			throw formatException;
+		}
+		
+		return title2Col;
+	}
+	
+	/**
+	 * 根据工资明细表生成劳务发放表
+	 * @param detailTablePath
+	 * @param exportPath
+	 * @throws Exception
+	 */
+	private void exportGrantTable(String detailTablePath, String exportPath) throws Exception {
+		List<Worker> grantWorkerList = new ArrayList<Worker>();
+		Map<String, Integer> title2Col = getAndCheckDetailTableTitle(detailTablePath);
+		
+		// 先导入明细表
+		XSSFWorkbook detailWorkbook = new XSSFWorkbook(new FileInputStream(detailTablePath));
+		XSSFSheet detailSheet = detailWorkbook.getSheetAt(0);
+		XSSFFormulaEvaluator evaluator = new XSSFFormulaEvaluator(detailWorkbook);
+		
+		double totalHours = 0;
+		for(int i = 1; i <= detailSheet.getLastRowNum(); i++) {
+			XSSFRow row = detailSheet.getRow(i);
+			String name = row.getCell(title2Col.get("姓名")).getStringCellValue();
+			boolean hasWorker = false;
+			for(Worker worker: this.tablePane.getWorkerList()) {
+				if(worker.name.equals(name)) {
+					worker.finalHours = evaluator.evaluate(row.getCell(title2Col.get("劳务发放表工时"))).getNumberValue();
+					grantWorkerList.add(worker);
+					hasWorker = true;
+					totalHours += worker.finalHours;
+					break;
+				}
+			}
+			if(!hasWorker) {
+				throw new Exception(String.format("助理：%s在通讯录中不存在", name));
+			}
+		}
+		
+		// 按学号排序
+		Collections.sort(grantWorkerList, new Comparator<Worker>() {
+			@Override
+			public int compare(Worker worker1, Worker worker2) {
+				return worker1.studentID.compareTo(worker2.studentID);
+			}
+		});
+		
+		// 按照模板生成发放表
+		XSSFWorkbook grantWorkbook = new XSSFWorkbook(new FileInputStream("grantTableModel.xlsx"));
+		XSSFSheet grantSheet = grantWorkbook.getSheetAt(0);
+		
+		XSSFCellStyle cellStyle = grantWorkbook.createCellStyle();
+		cellStyle.setAlignment(HorizontalAlignment.CENTER);
+		Font font = grantWorkbook.createFont();
+		font.setFontHeightInPoints((short) 12);
+		font.setFontName("宋体");
+		cellStyle.setFont(font);
+		cellStyle.setBorderBottom(BorderStyle.THIN);
+		cellStyle.setBorderLeft(BorderStyle.THIN);
+		cellStyle.setBorderTop(BorderStyle.THIN);
+		cellStyle.setBorderRight(BorderStyle.THIN);
+		
+		XSSFRow grantTitleRow = grantSheet.getRow(0);
+		XSSFCell grantTitleCell = grantTitleRow.getCell(0);
+		grantTitleCell.setCellValue(this.getTitleDate() + "勤工助学劳务报酬发放表");
+		
+		XSSFRow sumRow = grantSheet.getRow(4);
+		XSSFCell sumCell = sumRow.getCell(0);
+		sumCell.setCellValue(String.format(
+				"总人数：%d   总工时：%.1f    总金额：%.1f     复核人签名：       学生处负责人签名盖章：      财务处负责人签名盖章：", 
+				grantWorkerList.size(), totalHours, totalHours*this.paymentPane.getValue()));
+		
+		for(int i = 0; i < grantWorkerList.size(); i++) {
+			Worker worker = grantWorkerList.get(i);
+			grantSheet.shiftRows(4+i, grantSheet.getLastRowNum(), 1, true, false);
+			XSSFRow newRow = grantSheet.createRow(4+i);
+			
+			XSSFCell indexCell = newRow.createCell(0, CellType.NUMERIC);
+			indexCell.setCellStyle(cellStyle);
+			indexCell.setCellValue(i+1);
+			
+			XSSFCell campusCell = newRow.createCell(1, CellType.STRING);
+			campusCell.setCellStyle(cellStyle);
+			campusCell.setCellValue("东校区");
+			
+			XSSFCell workUnitCell = newRow.createCell(2, CellType.STRING);
+			workUnitCell.setCellStyle(cellStyle);
+			workUnitCell.setCellValue("教务部");
+			
+			XSSFCell workDepartmentCell = newRow.createCell(3, CellType.STRING);
+			workDepartmentCell.setCellStyle(cellStyle);
+			workDepartmentCell.setCellValue("多媒体室");
+			
+			XSSFCell studentIDCell = newRow.createCell(4, CellType.STRING);
+			studentIDCell.setCellStyle(cellStyle);
+			studentIDCell.setCellValue(worker.studentID);
+			
+			XSSFCell nameCell = newRow.createCell(5, CellType.STRING);
+			nameCell.setCellStyle(cellStyle);
+			nameCell.setCellValue(worker.name);
+			
+			XSSFCell hoursCell = newRow.createCell(6, CellType.NUMERIC);
+			hoursCell.setCellStyle(cellStyle);
+			hoursCell.setCellValue(worker.finalHours);
+			
+			XSSFCell paymentCell = newRow.createCell(7, CellType.FORMULA);
+			paymentCell.setCellStyle(cellStyle);
+			paymentCell.setCellFormula(String.format("G%d*%f", 5+i, this.paymentPane.getValue()));
+			
+			XSSFCell bankAccountCell = newRow.createCell(8, CellType.STRING);
+			bankAccountCell.setCellStyle(cellStyle);
+			bankAccountCell.setCellValue(worker.bankcard);
+			
+			XSSFCell phoneCell = newRow.createCell(9, CellType.STRING);
+			phoneCell.setCellStyle(cellStyle);
+			phoneCell.setCellValue(worker.phone);
+			
+			XSSFCell signatureCell = newRow.createCell(10, CellType.STRING);
+			signatureCell.setCellStyle(cellStyle);
+			
+			XSSFCell remarkCell = newRow.createCell(11, CellType.STRING);
+			remarkCell.setCellStyle(cellStyle);
+			remarkCell.setCellValue("固定岗");
+		}
+		
+		// 导出文件
+		grantWorkbook.setForceFormulaRecalculation(true);
+		File file = new File(exportPath);
+		try {
+			file.createNewFile();
+			FileOutputStream stream =new FileOutputStream(file);
+			grantWorkbook.write(stream);
+			stream.close();
+			grantWorkbook.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			Main.alertError(e);
+		}
 	}
 	
 	private String getTitleDate() {
@@ -117,13 +327,13 @@ public class ExportPane extends GridPane {
 	 * @param tableTitle
 	 * @return
 	 */
-	private String getDirectory(String tableTitle) {
+	private String getSaveDirectory(String tableTitle) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("保存表格");
 		fileChooser.setInitialDirectory(new File("."));
 		try {
 			String historyPath = HistoryIO.readExportFileInfo();
-			if(new File(historyPath).exists()) {
+			if(new File(historyPath).getParentFile().isDirectory()) {
 				fileChooser.setInitialDirectory(new File(historyPath).getParentFile());
 			}
 		} catch (Exception e) {
@@ -171,10 +381,10 @@ public class ExportPane extends GridPane {
 			hourCounter.setDutyChangeDates(this.datePane.getDutyChangeDates());
 			hourCounter.setExtraHourLists(this.hourListPane.getExtraLists());
 			
-			hourCounter.setDailyCheckHoursPerday(this.dailyHoursPane.getHours());
-			hourCounter.setWeeklyCheckHoursPerWeek(this.weeklyHoursPane.getHours());
-			hourCounter.setGroupAdminHours(this.adminHoursPane.getHours());
-			hourCounter.setGroupSystemHours(this.systemHoursPane.getHours());
+			hourCounter.setDailyCheckHoursPerday(this.dailyHoursPane.getValue());
+			hourCounter.setWeeklyCheckHoursPerWeek(this.weeklyHoursPane.getValue());
+			hourCounter.setGroupAdminHours(this.adminHoursPane.getValue());
+			hourCounter.setGroupSystemHours(this.systemHoursPane.getValue());
 			
 			hourCounter.count();
 			return hourCounter;
@@ -292,6 +502,7 @@ public class ExportPane extends GridPane {
 		}
 		
 		// 导出文件
+		workbook.setForceFormulaRecalculation(true);
 		File file = new File(excelPath);
 		try {
 			file.createNewFile();

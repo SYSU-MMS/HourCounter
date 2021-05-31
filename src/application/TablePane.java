@@ -91,8 +91,18 @@ public class TablePane extends ScrollPane {
 					excelChooser.setInitialDirectory(new File("."));
 					
 					// 获取上一次导入表格时的目录
-					if(!excelPaths.isEmpty()) {
-						excelChooser.setInitialDirectory(new File(excelPaths.get(excelPaths.size()-1)).getParentFile());
+					try {
+						String historyPath = "";
+						if(titleLabel.getText() == "常检表") {
+							historyPath = HistoryIO.readDailyTableFileInfo().get(0).path;
+						}else if(titleLabel.getText() == "值班表") {
+							historyPath = HistoryIO.readDutyTableFileInfo().get(0).path;
+						}
+						if(new File(historyPath).getParentFile().isDirectory()) {
+							excelChooser.setInitialDirectory(new File(historyPath).getParentFile());
+						}
+					}catch(Exception e) {
+						e.printStackTrace();
 					}
 					
 					excelChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XLSX", "*.xlsx"));
@@ -261,7 +271,7 @@ public class TablePane extends ScrollPane {
 				excelChooser.setInitialDirectory(new File("."));
 				try {
 					String historyPath = HistoryIO.readWorkerListFileInfo();
-					if(new File(historyPath).exists()) {
+					if(new File(historyPath).getParentFile().isDirectory()) {
 						excelChooser.setInitialDirectory(new File(historyPath).getParentFile());
 					}
 				} catch (Exception e) {
