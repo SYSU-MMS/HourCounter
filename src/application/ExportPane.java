@@ -25,10 +25,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import application.Worker.Group;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -44,7 +45,7 @@ public class ExportPane extends GridPane {
 	 * @author Syderny
 	 *
 	 */
-	class SetUpPane extends FlowPane {
+	class SetUpPane extends BorderPane {
 		private Label titleLabel;
 		private Spinner<Double> spinner;
 		
@@ -52,7 +53,12 @@ public class ExportPane extends GridPane {
 			this.titleLabel = new Label(title);
 			this.spinner = new Spinner<Double>(0, 999, defaultHours, stepHours);
 			
-			this.getChildren().addAll(this.titleLabel, this.spinner);
+			this.titleLabel.getStyleClass().add("setup-title-label");
+			this.spinner.getStyleClass().add("setup-spinner");
+			this.spinner.getEditor().getStyleClass().add("spinner-editor");
+			
+			this.setRight(this.spinner);
+			this.setLeft(this.titleLabel);
 		}
 		
 		public double getValue() {
@@ -145,7 +151,21 @@ public class ExportPane extends GridPane {
 			}
 		});
 		
-		this.add(this.paymentPane, 0, 0, 2, 1);
+		this.setHgap(20);
+		this.setVgap(20);
+		GridPane.setHalignment(this.paymentPane, HPos.CENTER);
+		GridPane.setHalignment(this.dailyHoursPane, HPos.CENTER);
+		GridPane.setHalignment(this.weeklyHoursPane, HPos.CENTER);
+		GridPane.setHalignment(this.adminHoursPane, HPos.CENTER);
+		GridPane.setHalignment(this.systemHoursPane, HPos.CENTER);
+		GridPane.setHalignment(this.exportDetailTableButton, HPos.CENTER);
+		GridPane.setHalignment(this.exportGrantTableButton, HPos.CENTER);
+		
+		this.getStyleClass().add("export-pane");
+		this.exportDetailTableButton.getStyleClass().add("export-table-button");
+		this.exportGrantTableButton.getStyleClass().add("export-table-button");
+		
+		this.add(this.paymentPane, 0, 0);
 		this.add(this.dailyHoursPane, 0, 1);
 		this.add(this.weeklyHoursPane, 0, 2);
 		this.add(this.adminHoursPane, 1, 1);

@@ -9,11 +9,17 @@ import java.util.List;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -23,7 +29,7 @@ import javafx.stage.Stage;
  * @author Syderny
  *
  */
-public class TablePane extends ScrollPane {
+public class TablePane extends HBox {
 	/**
 	 * 值班表或常检表表格的导入和设置面板
 	 * @author Syderny
@@ -31,9 +37,13 @@ public class TablePane extends ScrollPane {
 	 */
 	class TableImportPane extends FlowPane {
 		private Label titleLabel;
-		private Button importButton;
-		private List<FlowPane> tableDatePanes;
+		private List<GridPane> tableDatePanes;
+		private List<DatePicker> startDatePickers;
+		private List<DatePicker> endDatePickers;
 		private List<String> excelPaths;
+		private Pane titlePane;
+		private ScrollPane datePaneScrollPane;
+		private VBox datePaneVBox;
 		
 		/**
 		 * 创建一个表格的设置面板，用于设置此表格的有效时间
@@ -48,12 +58,23 @@ public class TablePane extends ScrollPane {
 			LocalDate startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			LocalDate endLocalDate = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			
-			FlowPane tableDatePane = new FlowPane();
+			GridPane tableDatePane = new GridPane();
+			FlowPane datePane = new FlowPane();
 			DatePicker startDatePicker = new DatePicker(startLocalDate);
 			DatePicker endDatePicker = new DatePicker(endLocalDate);
-			Label toLabel = new Label("至");
+			Label toLabel = new Label("-");
 			Label fileNameLabel = new Label(fileName);
-			Button removeButton = new Button("删除");
+			Button removeButton = new Button("X");
+			
+			removeButton.getStyleClass().add("small-close-button");
+			
+			tableDatePane.getStyleClass().add("table-date-pane");
+			datePane.getStyleClass().add("date-pane");
+			
+			
+			fileNameLabel.getStyleClass().add("table-filename-label");
+			startDatePicker.getEditor().getStyleClass().add("date-picker-editor");
+			endDatePicker.getEditor().getStyleClass().add("date-picker-editor");
 			
 			removeButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
@@ -61,13 +82,19 @@ public class TablePane extends ScrollPane {
 					int idx = tableDatePanes.indexOf(tableDatePane);
 					excelPaths.remove(idx);
 					tableDatePanes.remove(tableDatePane);
-					getChildren().remove(tableDatePane);
+					datePaneVBox.getChildren().remove(tableDatePane);
 				}
 			});
 			
-			tableDatePane.getChildren().addAll(startDatePicker, toLabel, endDatePicker, fileNameLabel, removeButton);
-			this.getChildren().add(tableDatePane);
+			datePane.getChildren().addAll(startDatePicker, toLabel, endDatePicker);
+			tableDatePane.add(fileNameLabel, 0, 0);
+			tableDatePane.add(datePane, 0, 1);
+			tableDatePane.add(removeButton, 1, 0, 1, 2);
+			this.datePaneVBox.getChildren().add(tableDatePane);
 			this.tableDatePanes.add(tableDatePane);
+			
+			this.startDatePickers.add(startDatePicker);
+			this.endDatePickers.add(endDatePicker);
 		}
 		
 		/**
@@ -76,16 +103,22 @@ public class TablePane extends ScrollPane {
 		 */
 		TableImportPane(String title) {
 			this.titleLabel = new Label(title);
-			this.importButton = new Button("导入");
-			this.tableDatePanes = new ArrayList<FlowPane>();
+			this.tableDatePanes = new ArrayList<GridPane>();
 			this.excelPaths = new ArrayList<String>();
+			this.titlePane = new Pane();
+			
+			this.startDatePickers = new ArrayList<DatePicker>();
+			this.endDatePickers = new ArrayList<DatePicker>();
+			
+			this.datePaneScrollPane = new ScrollPane();
+			this.datePaneVBox = new VBox(10);
 			
 			/**
 			 * 点击按钮弹出文件选择器
 			 */
-			this.importButton.setOnAction(new EventHandler<ActionEvent>() {
+			this.titlePane.setOnMouseClicked(new EventHandler<MouseEvent>() {
 				@Override
-				public void handle(ActionEvent event) {
+				public void handle(MouseEvent event) {
 					FileChooser excelChooser = new FileChooser();
 					excelChooser.setTitle("选择" + titleLabel.getText() + "表格");
 					excelChooser.setInitialDirectory(new File("."));
@@ -153,16 +186,24 @@ public class TablePane extends ScrollPane {
 				e.printStackTrace();
 			}
 			
-			this.getChildren().add(0, this.titleLabel);
-			this.getChildren().add(1, this.importButton);
+			this.titleLabel.getStyleClass().add("table-import-pane-title-label");
+			this.titlePane.getStyleClass().add("table-import-pane-title-pane");
+			
+			this.datePaneScrollPane.setContent(this.datePaneVBox);
+			this.datePaneScrollPane.getStyleClass().add("date-pane-scrollpane");
+			this.datePaneVBox.setAlignment(Pos.CENTER);
+			this.datePaneVBox.getStyleClass().add("date-pane-vbox");
+			
+			this.titlePane.getChildren().add(this.titleLabel);
+			this.getChildren().add(this.titlePane);
+			this.getChildren().add(this.datePaneScrollPane);
 //			for(FlowPane tableDatePane: this.tableDatePanes) {
 //				this.getChildren().add(tableDatePane);
 //			}
 		}
 	}
 	
-	private VBox vbox;
-	private FlowPane workerListPane;
+	private BorderPane workerListPane;
 	private TableImportPane dutyImportPane;
 	private TableImportPane dailyImportPane;
 	
@@ -172,8 +213,9 @@ public class TablePane extends ScrollPane {
 	
 	// 初始化表格面板
 	public TablePane(Stage primaryStage, HourListPane hourListPane) {
+		this.setAlignment(Pos.CENTER);
+		this.setSpacing(60);
 		
-		this.vbox = new VBox();
 		this.primaryStage = primaryStage;
 		this.hourListPane = hourListPane;
 		
@@ -181,8 +223,10 @@ public class TablePane extends ScrollPane {
 		this.dutyImportPane = new TableImportPane("值班表");
 		this.dailyImportPane = new TableImportPane("常检表");
 		
-		this.vbox.getChildren().addAll(this.dutyImportPane, this.dailyImportPane);
-		this.setContent(this.vbox);
+		this.dutyImportPane.getStyleClass().add("table-import-pane");
+		this.dailyImportPane.getStyleClass().add("table-import-pane");
+		
+		this.getChildren().addAll(this.dutyImportPane, this.dailyImportPane);
 	}
 	
 	/**
@@ -204,8 +248,8 @@ public class TablePane extends ScrollPane {
 		
 		for(int i = 0; i < this.dutyImportPane.excelPaths.size(); i++) {
 			String excelPath = this.dutyImportPane.excelPaths.get(i);
-			DatePicker startDatePicker = (DatePicker) this.dutyImportPane.tableDatePanes.get(i).getChildren().get(0);
-			DatePicker endDatePicker = (DatePicker) this.dutyImportPane.tableDatePanes.get(i).getChildren().get(2);
+			DatePicker startDatePicker = (DatePicker) this.dutyImportPane.startDatePickers.get(i);
+			DatePicker endDatePicker = (DatePicker) this.dutyImportPane.endDatePickers.get(i);
 			
 			Date startDate = Main.string2Date(startDatePicker.getValue().toString());
 			Date endDate = Main.string2Date(endDatePicker.getValue().toString());
@@ -235,8 +279,8 @@ public class TablePane extends ScrollPane {
 		
 		for(int i = 0; i < this.dailyImportPane.excelPaths.size(); i++) {
 			String excelPath = this.dailyImportPane.excelPaths.get(i);
-			DatePicker startDatePicker = (DatePicker) this.dailyImportPane.tableDatePanes.get(i).getChildren().get(0);
-			DatePicker endDatePicker = (DatePicker) this.dailyImportPane.tableDatePanes.get(i).getChildren().get(2);
+			DatePicker startDatePicker = (DatePicker) this.dailyImportPane.startDatePickers.get(i);
+			DatePicker endDatePicker = (DatePicker) this.dailyImportPane.endDatePickers.get(i);
 			
 			Date startDate = Main.string2Date(startDatePicker.getValue().toString());
 			Date endDate = Main.string2Date(endDatePicker.getValue().toString());
@@ -258,14 +302,21 @@ public class TablePane extends ScrollPane {
 	 * 创建一个通讯录的导入面板
 	 */
 	private void createWorkerListImportPane() {
-		this.workerListPane = new FlowPane();
-		Label titleLabel = new Label("通讯录");
-		Button importButton = new Button("导入");
+		this.workerListPane = new BorderPane();
+		VBox titlePane = new VBox();
+		Label titleLabel = new Label("通");
+		Label titleLabel2 = new Label("讯录");
 		Label fileNameLabel = new Label();
 		
-		importButton.setOnAction(new EventHandler<ActionEvent>() {
+		this.workerListPane.getStyleClass().add("table-import-pane");
+		titlePane.setId("worker-list-title-pane");
+		fileNameLabel.setId("worker-filename-label");
+		titleLabel.setId("worker-list-title-label1");
+		titleLabel2.setId("worker-list-title-label2");
+		
+		titlePane.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
-			public void handle(ActionEvent event) {
+			public void handle(MouseEvent event) {
 				FileChooser excelChooser = new FileChooser();
 				excelChooser.setTitle("选择" + titleLabel.getText() + "表格");
 				excelChooser.setInitialDirectory(new File("."));
@@ -306,8 +357,11 @@ public class TablePane extends ScrollPane {
 			e.printStackTrace();
 		}
 		
-		this.workerListPane.getChildren().addAll(titleLabel, importButton, fileNameLabel);
-		this.vbox.getChildren().add(this.workerListPane);
+		titlePane.setAlignment(Pos.CENTER);
+		titlePane.getChildren().addAll(titleLabel, titleLabel2);
+		this.workerListPane.setCenter(titlePane);
+		this.workerListPane.setBottom(fileNameLabel);
+		this.getChildren().add(this.workerListPane);
 	}
 	
 	/**

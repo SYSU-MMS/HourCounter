@@ -8,11 +8,13 @@ import java.util.Map;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
@@ -36,17 +38,17 @@ class ExtraHourList {
  *
  */
 public class HourListPane extends ScrollPane {
-	class ExtraListPane extends FlowPane {
-		private TextArea titleTextArea;
+	class ExtraListPane extends BorderPane {
+		private TextField titleTextField;
 		private Button addNameButton;
 		private List<FlowPane> namePanes;
 		private Button removeSelfButton;
 		
 		public String getTitle() {
-			return this.titleTextArea.getText();
+			return this.titleTextField.getText();
 		}
 		public void setTitle(String title) {
-			this.titleTextArea.setText(title);;
+			this.titleTextField.setText(title);;
 		}
 		
 		/**
@@ -73,12 +75,31 @@ public class HourListPane extends ScrollPane {
 		}
 		
 		ExtraListPane() {
-			this.setPrefWidth(WIDTH);
-			
-			this.titleTextArea = new TextArea("请输入名称");
-			this.addNameButton = new Button("添加");
-			this.removeSelfButton = new Button("删除");
+			this.titleTextField = new TextField("请输入名称");
+			this.addNameButton = new Button("+");
+			this.removeSelfButton = new Button("X");
 			this.namePanes = new ArrayList<FlowPane>();
+			
+			this.getStyleClass().add("extra-list-pane");
+			this.titleTextField.getStyleClass().add("extra-list-title");
+			this.removeSelfButton.getStyleClass().add("extra-list-close-button");
+			
+			BorderPane titleBorderPane = new BorderPane();
+			titleBorderPane.getStyleClass().add("extra-title-border-pane");
+			titleBorderPane.setRight(this.removeSelfButton);
+			titleBorderPane.setCenter(this.titleTextField);
+			
+			ScrollPane namePaneScrollPane = new ScrollPane();
+			FlowPane namePaneFlowPane = new FlowPane();
+			namePaneFlowPane.getStyleClass().add("names-flow-pane");
+			namePaneScrollPane.setContent(namePaneFlowPane);
+			namePaneScrollPane.getStyleClass().add("name-pane-scroll-pane");
+			
+			this.setTop(titleBorderPane);
+			this.setCenter(namePaneScrollPane);
+			
+			namePaneFlowPane.getChildren().add(this.addNameButton);
+			this.addNameButton.getStyleClass().add("add-button");
 			
 			/**
 			 * 添加新的助理和对应的工时加减
@@ -89,7 +110,11 @@ public class HourListPane extends ScrollPane {
 					FlowPane namePane = new FlowPane();
 					ChoiceBox<String> nameChoiceBox = new ChoiceBox<String>(FXCollections.observableArrayList(nameList));
 					Spinner<Double> hoursSpinner = new Spinner<Double>(-10, 10, 1, 0.5);
-					Button removeButton = new Button("删除");
+					Button removeButton = new Button("X");
+					removeButton.getStyleClass().add("small-close-button");
+					nameChoiceBox.getStyleClass().add("name-choice-box");
+					hoursSpinner.getStyleClass().add("spinner");
+					hoursSpinner.getEditor().getStyleClass().add("spinner-editor");
 					
 					/**
 					 * 移除此助理的工时加减信息
@@ -98,13 +123,16 @@ public class HourListPane extends ScrollPane {
 						@Override
 						public void handle(ActionEvent event) {
 							namePanes.remove(namePane);
-							getChildren().remove(namePane);
+							namePaneFlowPane.getChildren().remove(namePane);
 						}
 					});
 					
+					namePane.getStyleClass().add("name-pane");
 					namePane.getChildren().addAll(nameChoiceBox, hoursSpinner, removeButton);
 					namePanes.add(namePane);
-					getChildren().add(namePane);
+					namePaneFlowPane.setHgap(0);
+					namePaneFlowPane.setVgap(5);
+					namePaneFlowPane.getChildren().add(namePaneFlowPane.getChildren().size()-1, namePane);
 				}
 			});
 			
@@ -114,8 +142,6 @@ public class HourListPane extends ScrollPane {
 					removeSelf();
 				}
 			});
-			
-			this.getChildren().addAll(this.addNameButton, this.removeSelfButton, this.titleTextArea);
 		}
 		
 		/**
@@ -132,8 +158,6 @@ public class HourListPane extends ScrollPane {
 	private List<String> nameList;
 	private List<ExtraListPane> extraListPanes;
 	private Button addListButton;
-	
-	public static final int WIDTH = 300;
 	
 	/**
 	 * 根据面板的设置获取额外项目工时列表
@@ -156,12 +180,13 @@ public class HourListPane extends ScrollPane {
 	}
 	
 	public HourListPane() {
-		this.setPrefWidth(WIDTH);
-		
 		this.workerList = new ArrayList<Worker>();
 		this.nameList = new ArrayList<String>();
 		
-		this.vbox = new VBox();
+		this.vbox = new VBox(20);
+		this.vbox.setAlignment(Pos.CENTER);
+		this.vbox.getStyleClass().add("extra-pane-vbox");
+		this.getStyleClass().add("extra-scroll-pane");
 		this.extraListPanes = new ArrayList<ExtraListPane>();
 		
 		ExtraListPane spotCheckListPane = new ExtraListPane();
@@ -180,18 +205,20 @@ public class HourListPane extends ScrollPane {
 		extraListPanes.add(absentListPane);
 		extraListPanes.add(omissionListPane);
 		
-		this.addListButton = new Button("添加");
+		this.addListButton = new Button("+");
+		this.addListButton.getStyleClass().add("add-button");
+		this.addListButton.getStyleClass().add("large-add-button");
 		this.addListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				ExtraListPane extraListPane = new ExtraListPane();
 				extraListPanes.add(extraListPane);
-				vbox.getChildren().add(extraListPane);
+				vbox.getChildren().add(vbox.getChildren().size()-1, extraListPane);
 			}
 		});
 		
-		this.vbox.getChildren().add(this.addListButton);
 		this.vbox.getChildren().addAll(spotCheckListPane, meteringListPane, absentListPane, omissionListPane);
+		this.vbox.getChildren().add(this.addListButton);
 		this.setContent(this.vbox);
 	}
 }

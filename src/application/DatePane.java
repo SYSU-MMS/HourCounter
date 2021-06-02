@@ -10,12 +10,16 @@ import java.util.Map;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
 /**
@@ -23,7 +27,7 @@ import javafx.scene.layout.VBox;
  * @author Syderny
  *
  */
-public class DatePane extends ScrollPane {
+public class DatePane extends GridPane {
 	/**
 	 * 设定当前结算工时的月份的面板
 	 * @author Syderny
@@ -44,7 +48,18 @@ public class DatePane extends ScrollPane {
 			this.monthSpinner = new Spinner<Integer>(1, 12, cal.get(Calendar.MONTH)+1);
 			this.monthLabel = new Label("月");
 			
-			this.getChildren().addAll(this.titleLabel, this.yearSpinner, this.yearLabel, this.monthSpinner, this.monthLabel);
+			this.yearSpinner.getEditor().getStyleClass().add("spinner-editor");
+			this.yearSpinner.getStyleClass().add("year-spinner");
+			this.monthSpinner.getEditor().getStyleClass().add("spinner-editor");
+			this.monthSpinner.getStyleClass().add("setup-spinner");
+			
+			this.titleLabel.getStyleClass().add("date-set-label");
+			this.yearLabel.getStyleClass().add("date-set-label");
+			this.monthLabel.getStyleClass().add("date-set-label");
+			
+			FlowPane rightPane = new FlowPane();
+			rightPane.getChildren().addAll(this.yearSpinner, this.yearLabel, this.monthSpinner, this.monthLabel);
+			this.getChildren().addAll(this.titleLabel, rightPane);
 		}
 	}
 	
@@ -61,7 +76,14 @@ public class DatePane extends ScrollPane {
 			this.limitLabel = new Label("本月工时上限：");
 			this.limitSpinner = new Spinner<Integer>(1, 200, 40);
 			
-			this.getChildren().addAll(this.limitLabel, this.limitSpinner);
+			this.limitSpinner.getEditor().getStyleClass().add("spinner-editor");
+			this.limitSpinner.getStyleClass().add("setup-spinner");
+			
+			this.limitLabel.getStyleClass().add("date-set-label");
+			
+			FlowPane rightPane = new FlowPane();
+			rightPane.getChildren().addAll(this.limitSpinner);
+			this.getChildren().addAll(this.limitLabel, rightPane);
 		}
 	}
 	
@@ -77,12 +99,24 @@ public class DatePane extends ScrollPane {
 		private DatePicker endDatePicker;
 		
 		WorkDatePane() {
-			this.titleLabel = new Label("结算起止日期");
-			this.toLabel = new Label("至");
+			this.titleLabel = new Label("结算起止日期：");
+			this.toLabel = new Label("-");
 			this.startDatePicker = new DatePicker(LocalDate.now());
 			this.endDatePicker = new DatePicker(LocalDate.now());
 			
-			this.getChildren().addAll(this.titleLabel, this.startDatePicker, this.toLabel, this.endDatePicker);
+			this.startDatePicker.getStyleClass().add("work-date-picker");
+			this.endDatePicker.getStyleClass().add("work-date-picker");
+			this.startDatePicker.getEditor().getStyleClass().add("date-picker-editor");
+			this.endDatePicker.getEditor().getStyleClass().add("date-picker-editor");
+			this.startDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
+			this.endDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
+			
+			this.titleLabel.getStyleClass().add("date-set-label");
+			this.toLabel.getStyleClass().add("date-set-label");
+			
+			FlowPane rightPane = new FlowPane();
+			rightPane.getChildren().addAll(this.startDatePicker, this.toLabel, this.endDatePicker);
+			this.getChildren().addAll(this.titleLabel, rightPane);
 		}
 	}
 	
@@ -91,41 +125,53 @@ public class DatePane extends ScrollPane {
 	 * @author Syderny
 	 *
 	 */
-	class WeeklyDatePane extends FlowPane {
-		private Label titleLabel;
+	class WeeklyDatePane extends ScrollPane {
 		private Button addButton;
 		private List<Button> removeButtons;
 		private List<DatePicker> weeklyDatePickers;
 		
 		WeeklyDatePane() {
-			this.titleLabel = new Label("周检日期：");
-			this.addButton = new Button("添加日期");
+			this.addButton = new Button("+");
 			this.weeklyDatePickers = new ArrayList<DatePicker>();
 			this.removeButtons = new ArrayList<Button>();
+			this.addButton.getStyleClass().add("add-button");
+			
+			FlowPane flowPane = new FlowPane(this.addButton);
+			flowPane.getStyleClass().add("scroll-pane-flow-pane");
+			flowPane.setVgap(5);
+			
+			this.setContent(flowPane);
+			this.getChildren().addAll(flowPane);
 			
 			this.addButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
 					DatePicker weeklyDatePicker = new DatePicker(LocalDate.now());
-					Button removeButton = new Button("删除");
+					Button removeButton = new Button("X");
+					FlowPane unitPane = new FlowPane();
+					
+					weeklyDatePicker.getStyleClass().add("work-date-picker");
+					weeklyDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
+					removeButton.getStyleClass().add("small-close-button");
+					unitPane.getStyleClass().add("date-unit-pane");
 					
 					removeButton.setOnAction(new EventHandler<ActionEvent>() {
 						@Override
 						public void handle(ActionEvent event) {
 							weeklyDatePickers.remove(weeklyDatePicker);
 							removeButtons.remove(removeButton);
-							getChildren().removeAll(weeklyDatePicker, removeButton);
+							unitPane.getChildren().removeAll(weeklyDatePicker, removeButton);
+							flowPane.getChildren().remove(unitPane);
 						}
 					});
 					
 					weeklyDatePickers.add(weeklyDatePicker);
 					removeButtons.add(removeButton);
-					
-					getChildren().addAll(weeklyDatePicker, removeButton);
+					unitPane.getChildren().addAll(weeklyDatePicker, removeButton);
+					flowPane.getChildren().add(flowPane.getChildren().size()-1, unitPane);
 				}
 			});
 			
-			this.getChildren().addAll(this.titleLabel, this.addButton);
 		}
 	}
 	
@@ -134,29 +180,44 @@ public class DatePane extends ScrollPane {
 	 * @author Syderny
 	 *
 	 */
-	class RestDatePane extends FlowPane {
-		private Label titleLabel;
+	class RestDatePane extends ScrollPane {
 		private Button addSegmentButton;
 		private List<Button> removeButtons;
 		private List<Label> toLabels;
 		private List<DatePicker> startDatePickers;
 		private List<DatePicker> endDatePickers;
 		
-		RestDatePane(String title) {
-			this.titleLabel = new Label(title);
-			this.addSegmentButton = new Button("添加时段");
+		RestDatePane() {
+			this.addSegmentButton = new Button("+");
 			this.toLabels = new ArrayList<Label>();
 			this.startDatePickers = new ArrayList<DatePicker>();
 			this.endDatePickers = new ArrayList<DatePicker>();
 			this.removeButtons = new ArrayList<Button>();
+			this.addSegmentButton.getStyleClass().add("add-button");
+			
+			FlowPane flowPane = new FlowPane(this.addSegmentButton);
+			flowPane.getStyleClass().add("scroll-pane-flow-pane");
+			flowPane.setVgap(5);
+			
+			this.setContent(flowPane);
+			this.getChildren().addAll(flowPane);
 			
 			this.addSegmentButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
-					Label toLabel = new Label("to");
+					Label toLabel = new Label("-");
 					DatePicker startDatePicker = new DatePicker(LocalDate.now());
 					DatePicker endDatePicker = new DatePicker(LocalDate.now());
-					Button removeButton = new Button("删除");
+					Button removeButton = new Button("X");
+					FlowPane unitPane = new FlowPane();
+					
+					toLabel.setStyle("-fx-font-weight: bold");
+					startDatePicker.getStyleClass().add("work-date-picker");
+					endDatePicker.getStyleClass().add("work-date-picker");
+					startDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
+					endDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
+					removeButton.getStyleClass().add("small-close-button");
+					unitPane.getStyleClass().add("date-segment-unit-pane");
 					
 					removeButton.setOnAction(new EventHandler<ActionEvent>() {
 						@Override
@@ -165,7 +226,8 @@ public class DatePane extends ScrollPane {
 							startDatePickers.remove(startDatePicker);
 							endDatePickers.remove(endDatePicker);
 							removeButtons.remove(removeButton);
-							getChildren().removeAll(toLabel, startDatePicker, endDatePicker, removeButton);
+							unitPane.getChildren().removeAll(startDatePicker, toLabel, endDatePicker, removeButton);
+							flowPane.getChildren().remove(unitPane);
 						}
 					});
 					
@@ -173,11 +235,11 @@ public class DatePane extends ScrollPane {
 					startDatePickers.add(startDatePicker);
 					endDatePickers.add(endDatePicker);
 					removeButtons.add(removeButton);
-					getChildren().addAll(startDatePicker, toLabel, endDatePicker, removeButton);
+					unitPane.getChildren().addAll(startDatePicker, toLabel, endDatePicker, removeButton);
+					flowPane.getChildren().add(flowPane.getChildren().size()-1, unitPane);
 				}
 			});
 			
-			this.getChildren().addAll(this.titleLabel, this.addSegmentButton);
 		}
 	}
 	
@@ -186,33 +248,48 @@ public class DatePane extends ScrollPane {
 	 * @author Syderny
 	 *
 	 */
-	class ChangeDatePane extends FlowPane {
-		private Label titleLabel;
+	class ChangeDatePane extends ScrollPane {
 		private Button addChangeButton;
 		private List<Button> removeButtons;
 		private List<Label> toLabels;
 		private List<DatePicker> changeDatePickers;
 		private List<Spinner<Integer>> changeDaySpinners;
 		
-		ChangeDatePane(String title) {
-			this.titleLabel = new Label(title);
-			this.addChangeButton = new Button("新增日期转换");
+		ChangeDatePane() {
+			this.addChangeButton = new Button("+");
 			this.toLabels = new ArrayList<Label>();
 			this.changeDatePickers = new ArrayList<DatePicker>();
 			this.changeDaySpinners = new ArrayList<Spinner<Integer>>();
 			this.removeButtons = new ArrayList<Button>();
+			this.addChangeButton.getStyleClass().add("add-button");
+			
+			FlowPane flowPane = new FlowPane(this.addChangeButton);
+			flowPane.getStyleClass().add("scroll-pane-flow-pane");
+			flowPane.setVgap(5);
+			
+			this.setContent(flowPane);
+			this.getChildren().addAll(flowPane);
 			
 			this.addChangeButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
-					Label toLabel = new Label("转换为星期");
+					Label toLabel = new Label("-");
 					DatePicker changeDatePicker = new DatePicker(LocalDate.now());
 					
 					int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 					day = day == Calendar.SUNDAY ? 6 : day-Calendar.MONDAY;
 					Spinner<Integer> changeDaySpinner = new Spinner<Integer>(1, 7, day);
 					
-					Button removeButton = new Button("删除");
+					Button removeButton = new Button("X");
+					
+					FlowPane unitPane = new FlowPane();
+					toLabel.setStyle("-fx-font-weight: bold;");
+					changeDatePicker.getStyleClass().add("work-date-picker");
+					changeDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
+					changeDaySpinner.getStyleClass().add("setoup-spinner");
+					changeDaySpinner.getEditor().getStyleClass().add("spinner-editor");
+					removeButton.getStyleClass().add("small-close-button");
+					unitPane.getStyleClass().add("date-change-unit-pane");
 					
 					removeButton.setOnAction(new EventHandler<ActionEvent>() {
 						@Override
@@ -221,23 +298,26 @@ public class DatePane extends ScrollPane {
 							changeDatePickers.remove(changeDatePicker);
 							changeDaySpinners.remove(changeDaySpinner);
 							removeButtons.remove(removeButton);
-							getChildren().removeAll(changeDatePicker, toLabel, changeDaySpinner, removeButton);
+							unitPane.getChildren().removeAll(changeDatePicker, toLabel, changeDaySpinner, removeButton);
+							flowPane.getChildren().remove(unitPane);
 						}
 					});
+					
 					
 					toLabels.add(toLabel);
 					changeDatePickers.add(changeDatePicker);
 					changeDaySpinners.add(changeDaySpinner);
 					removeButtons.add(removeButton);
-					getChildren().addAll(changeDatePicker, toLabel, changeDaySpinner, removeButton);
+					unitPane.getChildren().addAll(changeDatePicker, toLabel, changeDaySpinner, removeButton);
+					flowPane.getChildren().add(flowPane.getChildren().size()-1, unitPane);
 				}
 			});
 			
-			this.getChildren().addAll(this.titleLabel, this.addChangeButton);
 		}
 	}
 	
 	private VBox vbox;
+	private Accordion accordion;
 	private TitleDatePane titleDatePane;
 	private LimitPane limitPane;
 	private WorkDatePane workDatePane;
@@ -248,8 +328,14 @@ public class DatePane extends ScrollPane {
 	private ChangeDatePane dutyChangePane;
 	
 	public DatePane() {
-		this.vbox = new VBox();
-		this.getChildren().add(this.vbox);
+		this.vbox = new VBox(20);
+		this.accordion = new Accordion();
+		
+		this.vbox.setAlignment(Pos.CENTER);
+		
+		this.add(this.vbox, 0, 0);
+		this.add(this.accordion, 1, 0);
+		
 		
 		this.titleDatePane = new TitleDatePane();
 		this.vbox.getChildren().add(this.titleDatePane);
@@ -260,22 +346,29 @@ public class DatePane extends ScrollPane {
 		this.workDatePane = new WorkDatePane();
 		this.vbox.getChildren().add(this.workDatePane);
 		
+		
+		this.vbox.getStyleClass().add("date-left-vbox");
+		
+		
 		this.weeklyDatePane = new WeeklyDatePane();
-		this.vbox.getChildren().add(this.weeklyDatePane);
+		TitledPane weeklyDateTitledPane = new TitledPane("周检日期", weeklyDatePane);
+		accordion.getPanes().add(weeklyDateTitledPane);
 		
-		this.dailyRestPane = new RestDatePane("常检休息日");
-		this.vbox.getChildren().add(this.dailyRestPane);
+		this.dailyRestPane = new RestDatePane();
+		TitledPane dailyRestTitledPane = new TitledPane("常检休息日", dailyRestPane);
+		accordion.getPanes().add(dailyRestTitledPane);
 		
-		this.dutyRestPane = new RestDatePane("值班休息日");
-		this.vbox.getChildren().add(this.dutyRestPane);
+		this.dutyRestPane = new RestDatePane();
+		TitledPane dutyRestTitledPane = new TitledPane("值班休息日", dutyRestPane);
+		accordion.getPanes().add(dutyRestTitledPane);
 		
-		this.dailyChangePane = new ChangeDatePane("常检日期转换");
-		this.vbox.getChildren().add(this.dailyChangePane);
+		this.dailyChangePane = new ChangeDatePane();
+		TitledPane dailyChangeTitledPane = new TitledPane("常检调换日", dailyChangePane);
+		accordion.getPanes().add(dailyChangeTitledPane);
 		
-		this.dutyChangePane = new ChangeDatePane("值班日期转换");
-		this.vbox.getChildren().add(this.dutyChangePane);
-		
-		this.setContent(this.vbox);
+		this.dutyChangePane = new ChangeDatePane();
+		TitledPane dutyChangeTitledPane = new TitledPane("值班调换日", dutyChangePane);
+		accordion.getPanes().add(dutyChangeTitledPane);
 	}
 	
 	// 以下的方法用于获取本面板设定的各类信息
