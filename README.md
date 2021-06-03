@@ -61,5 +61,5 @@
 
 下载enigma virtual box，根据网上教程将上步的多个文件打包成单个exe
 
-[Qt程序通过enigma virtual box制作成单文件可执行程序*.exe（封包）_龚建波-CSDN博客](https://blog.csdn.net/gongjianbo1992/article/details/80863247#:~:text=Enigma Virtual Box 是软件虚拟化 工具 ，它可以将多个 文件 封装到应用,exe文件 的路径和名称 ②添加执行的相关依赖库，请确保依赖库完整 ③ 点击OK，再运点击Process运行 则在输出目录可以看到单个可执行 exe文件 。)
+[Qt程序通过enigma virtual box制作成单文件可执行程序*.exe（封包）_龚建波-CSDN博客](https://blog.csdn.net/gongjianbo1992/article/details/80863247)
 
