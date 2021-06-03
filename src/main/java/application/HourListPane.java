@@ -1,9 +1,7 @@
 package application;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.Collator;
+import java.util.*;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -174,6 +172,14 @@ public class HourListPane extends ScrollPane {
 	
 	public void setWorkerList(List<Worker> workerList) {
 		this.workerList = workerList;
+
+		Collections.sort(this.workerList, new Comparator<Worker>() {
+			@Override
+			public int compare(Worker worker1, Worker worker2) {
+				return Collator.getInstance(Locale.CHINA).compare(worker1.name, worker2.name);
+			}
+		});
+
 		for(Worker worker: this.workerList) {
 			this.nameList.add(worker.name);
 		}

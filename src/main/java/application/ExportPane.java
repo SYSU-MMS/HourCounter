@@ -80,7 +80,7 @@ public class ExportPane extends GridPane {
 	private SetUpPane paymentPane;
 	
 	public static final double DAILY_CHECK_HOURS_PER_DAY = 2;
-	public static final double WEEKLY_CHECK_HOURS_PER_WEEK = 1.5;
+	public static final double WEEKLY_CHECK_HOURS_PER_WEEK = 0.5;
 	public static final double GROUP_ADMIN_HOURS_PER_MONTH = 40;
 	public static final double GROUP_SYSTEM_HOURS_PER_MONTH = 20;
 	public static final double PAYMENT_PER_HOURS = 25;
@@ -101,7 +101,7 @@ public class ExportPane extends GridPane {
 		this.primaryStage = primaryStage;
 		
 		this.dailyHoursPane = new SetUpPane("常检每日工时", DAILY_CHECK_HOURS_PER_DAY, 0.5);
-		this.weeklyHoursPane = new SetUpPane("周检每次工时", WEEKLY_CHECK_HOURS_PER_WEEK, 0.5);
+		this.weeklyHoursPane = new SetUpPane("周检每间工时", WEEKLY_CHECK_HOURS_PER_WEEK, 0.5);
 		this.adminHoursPane = new SetUpPane("管理组本月工时", GROUP_ADMIN_HOURS_PER_MONTH, 1);
 		this.systemHoursPane = new SetUpPane("系统组本月工时", GROUP_SYSTEM_HOURS_PER_MONTH, 1);
 		this.paymentPane = new SetUpPane("每小时薪酬", PAYMENT_PER_HOURS, 1);

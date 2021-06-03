@@ -378,7 +378,7 @@
 	-fx-border-style: solid;
 	-fx-border-width: 1;
 	
-	-fx-max-width: 70;
+	-fx-max-width: 80;
 }
 
 .name-choice-box .context-menu {
@@ -478,6 +478,7 @@
 
 .work-date-picker-editor {
 	-fx-padding: 1.5 6 1.5 6;
+	-fx-focus-color: transparent;
 }
 
 .date-set-label {

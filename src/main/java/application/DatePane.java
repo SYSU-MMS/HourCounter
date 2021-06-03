@@ -151,6 +151,7 @@ public class DatePane extends GridPane {
 					FlowPane unitPane = new FlowPane();
 					
 					weeklyDatePicker.getStyleClass().add("work-date-picker");
+					weeklyDatePicker.getEditor().getStyleClass().add("date-picker-editor");
 					weeklyDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
 					removeButton.getStyleClass().add("small-close-button");
 					unitPane.getStyleClass().add("date-unit-pane");
@@ -214,6 +215,8 @@ public class DatePane extends GridPane {
 					toLabel.setStyle("-fx-font-weight: bold");
 					startDatePicker.getStyleClass().add("work-date-picker");
 					endDatePicker.getStyleClass().add("work-date-picker");
+					startDatePicker.getEditor().getStyleClass().add("date-picker-editor");
+					endDatePicker.getEditor().getStyleClass().add("date-picker-editor");
 					startDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
 					endDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
 					removeButton.getStyleClass().add("small-close-button");
@@ -285,8 +288,9 @@ public class DatePane extends GridPane {
 					FlowPane unitPane = new FlowPane();
 					toLabel.setStyle("-fx-font-weight: bold;");
 					changeDatePicker.getStyleClass().add("work-date-picker");
+					changeDatePicker.getEditor().getStyleClass().add("date-picker-editor");
 					changeDatePicker.getEditor().getStyleClass().add("work-date-picker-editor");
-					changeDaySpinner.getStyleClass().add("setoup-spinner");
+					changeDaySpinner.getStyleClass().add("setup-spinner");
 					changeDaySpinner.getEditor().getStyleClass().add("spinner-editor");
 					removeButton.getStyleClass().add("small-close-button");
 					unitPane.getStyleClass().add("date-change-unit-pane");
