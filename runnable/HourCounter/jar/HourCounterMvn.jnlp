@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="HourCounterMvn.jar" size="90956" download="eager" />
+    <jar href="HourCounterMvn.jar" size="91199" download="eager" />
     <jar href="SparseBitSet-1.2.jar" size="24510" download="eager" />
     <jar href="batik-all-1.13.jar" size="4292177" download="eager" />
     <jar href="bcpkix-jdk15on-1.68.jar" size="887800" download="eager" />

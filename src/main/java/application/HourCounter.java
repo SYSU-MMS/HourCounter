@@ -155,22 +155,21 @@ public class HourCounter {
 			this.countExtra(extraList);
 		}
 		
-//		List<Worker> removeList = new ArrayList<Worker>();
+		List<Worker> removeList = new ArrayList<Worker>();
 		for(Worker worker: this.workerList) {
 			// 没常检组别的都是C组
 			double totalHours = worker.getTotalHours();
 			if(worker.group == null && totalHours != 0) {
 				worker.group = Group.C;
+			}else if(totalHours == 0) {
+				removeList.add(worker);
 			}
-//			if(totalHours == 0) {
-//				removeList.add(worker);
-//			}
 			worker.finalHours = Math.min(totalHours, this.maxHours);
 			worker.restHours = totalHours - worker.finalHours;
 		}
 		
-//		// 移除完全没有工时的助理
-//		this.workerList.removeAll(removeList);
+		// 移除完全没有工时的助理
+		this.workerList.removeAll(removeList);
 	}
 	
 	/**

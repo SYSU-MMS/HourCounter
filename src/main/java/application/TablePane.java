@@ -67,7 +67,6 @@ public class TablePane extends HBox {
 			Button removeButton = new Button("X");
 			
 			removeButton.getStyleClass().add("small-close-button");
-			
 			tableDatePane.getStyleClass().add("table-date-pane");
 			datePane.getStyleClass().add("date-pane");
 			
@@ -83,6 +82,9 @@ public class TablePane extends HBox {
 					excelPaths.remove(idx);
 					tableDatePanes.remove(tableDatePane);
 					datePaneVBox.getChildren().remove(tableDatePane);
+
+					startDatePickers.remove(startDatePicker);
+					endDatePickers.remove(endDatePicker);
 				}
 			});
 			

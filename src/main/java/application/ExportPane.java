@@ -515,10 +515,16 @@ public class ExportPane extends GridPane {
 			preRestCell.setCellValue(worker.preRestHours);
 			
 			XSSFCell finalCell = row.createCell(6 + numHourNames);
-			finalCell.setCellFormula(String.format("MIN(%c%d,%f)", 'A'+4+numHourNames, i+2, counter.getMaxHours()));
+			finalCell.setCellFormula(String.format("MIN(%c%d+%c%d,%f)",
+					'A'+4+numHourNames, i+2,
+					'A'+5+numHourNames, i+2,
+					counter.getMaxHours()));
 			
 			XSSFCell restCell = row.createCell(7 + numHourNames);
-			restCell.setCellFormula(String.format("%c%d-%c%d", 'A'+4+numHourNames, i+2, 'A'+6+numHourNames, i+2));
+			restCell.setCellFormula(String.format("%c%d+%c%d-%c%d",
+					'A'+4+numHourNames, i+2,
+					'A'+5+numHourNames, i+2,
+					'A'+6+numHourNames, i+2));
 		}
 		
 		// 导出文件
